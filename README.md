@@ -1,6 +1,6 @@
 # MHMetLib
 
-MHMetLib is a library designed for measure the performance of metaheuristics algorithm.
+MHMetLib is a library designed for measure the performance of trajectory and population-based metaheuristic algorithms.
 
 ## Requirements
 
@@ -8,6 +8,7 @@ To build and run this program, you need:
 
 - A C++ compiler (e.g., GCC, Clang)
 - Python 3.x (for `plotData.py` and other Python utilities, if applicable)
+- Eigen 3.x (for population-based)
 
 ## Installation
 
@@ -16,7 +17,7 @@ To build and run this program, you need:
    git clone https://github.com/your-repo/MHMetLib.git
 ## Compilation
 
-    g++ -std=c++11 -o analyzer main.cpp
+    g++ -I /eigen/Eigen main.cpp -o main
 
 ## Usage
 
