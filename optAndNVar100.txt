@@ -1,0 +1,4 @@
+OneMax 100 100
+OneMaxRuggedness2 100 100
+IsingTorus 200 100
+NQueens 10 100

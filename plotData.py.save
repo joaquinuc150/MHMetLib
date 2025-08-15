@@ -1,4 +1,4 @@
-oimport matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 import os
@@ -497,70 +497,12 @@ def mainTrayectorial(input_dir):
     except FileNotFoundError:
         print(f"Warning: Could not find {os.path.join(input_dir, 'EntropyDiversity.txt')}")
 
-def load_generation_mapping(raw_data_path):
-    try:
-        raw_data = np.loadtxt(raw_data_path, usecols=(0, 5))
-        
-        generation_map = {}
-        current_gen = None
-        start_eval = None
-        
-        for i, (evaluation, generation) in enumerate(raw_data):
-            evaluation = int(evaluation)
-            generation = int(generation)
-            
-            if generation != current_gen:
-                if current_gen is not None:
-                    generation_map[current_gen] = (start_eval, int(raw_data[i-1, 0]))
-                
-                current_gen = generation
-                start_eval = evaluation
-        
-        if current_gen is not None:
-            generation_map[current_gen] = (start_eval, int(raw_data[-1, 0]))
-            
-        return generation_map, int(raw_data[-1, 0])
-        
-    except Exception as e:
-        print(f"Error loading generation mapping: {e}")
-        return {}, 0
-
-def convert_generation_to_evaluation_based(gen_data, generation_map, total_evals):
-    if len(gen_data) == 0 or len(generation_map) == 0:
-        return np.array([])
-    
-    eval_based_data = []
-    
-    for gen_num, value in gen_data:
-        gen_num = int(gen_num)
-        if gen_num in generation_map:
-            start_eval, end_eval = generation_map[gen_num]
-            for eval_num in range(start_eval, end_eval + 1):
-                eval_based_data.append([eval_num, value])
-    
-    return np.array(eval_based_data)
-
-def mainCombined(pop_dir, traj_dir, raw_data_path):
+def mainCombined(pop_dir, traj_dir):
     output_dir = os.path.join(pop_dir, 'combined_figures')
     try:
         os.makedirs(output_dir, exist_ok=True)
     except OSError as e:
         print(f"Error creating output directory: {e}")
-
-    raw_data_path = raw_data_path
-    generation_map, total_evals = load_generation_mapping(raw_data_path)
-    
-    if not generation_map:
-        print("Warning: Could not load generation mapping. Using original data without alignment.")
-
-    generation_based_files = [
-        'objectiveValueBestSolutionOverTime.txt',
-        'convergenceOptimumBased.txt', 
-        'changeInObjectiveValuePerGeneration.txt',
-        'geometricRateofFitnessChangePerGeneration.txt',
-        'hammingDistanceBestSolutionPerGeneration.txt',
-        'relError.txt'
-    ]
 
     plt.figure(figsize=(12, 8))
     try:
@@ -575,7 +517,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory Fevals.txt")
     
-    plt.xlabel('Evaluations')
+    plt.xlabel('Evaluations/Iterations')
     plt.ylabel('Objective Function Value')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
@@ -585,25 +527,18 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_best_gen = np.loadtxt(os.path.join(pop_dir, 'objectiveValueBestSolutionOverTime.txt'))
-        if generation_map:
-            pop_best_eval = convert_generation_to_evaluation_based(pop_best_gen, generation_map, total_evals)
-            if len(pop_best_eval) > 0:
-                plt.plot(pop_best_eval[:,0], pop_best_eval[:,1], 'b-', label='Population-based Best', linewidth=2)
-            else:
-                plt.plot(pop_best_gen[:,0], pop_best_gen[:,1], 'b-', label='Population-based Best (by generation)', linewidth=2)
-        else:
-            plt.plot(pop_best_gen[:,0], pop_best_gen[:,1], 'b-', label='Population-based Best (by generation)', linewidth=2)
+        pop_best = np.loadtxt(os.path.join(pop_dir, 'objectiveValueBestSolutionOverTime.txt'))
+        plt.plot(pop_best[:,0], pop_best[:,1], 'b-', label='Population-based Best', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find population best solution data")
     
     try:
         traj_best = np.loadtxt(os.path.join(traj_dir, 'FevalsBest.txt'))
-        plt.plot(np.arange(1, len(traj_best) + 1), traj_best, 'r--', label='Trajectory-based Best', linewidth=2)
+        plt.plot(np.arange(1, len(traj_data) + 1), traj_data, 'r--', label='Trajectory-based Best', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory best solution data")
     
-    plt.xlabel('Evaluations')
+    plt.xlabel('Generation/Iteration')
     plt.ylabel('Best Objective Value')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
@@ -613,15 +548,8 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_conv_gen = np.loadtxt(os.path.join(pop_dir, 'convergenceOptimumBased.txt'))
-        if generation_map:
-            pop_conv_eval = convert_generation_to_evaluation_based(pop_conv_gen, generation_map, total_evals)
-            if len(pop_conv_eval) > 0:
-                plt.plot(pop_conv_eval[:,0], pop_conv_eval[:,1], 'b-', label='Population Convergence', linewidth=2)
-            else:
-                plt.plot(pop_conv_gen[:,0], pop_conv_gen[:,1], 'b-', label='Population Convergence (by generation)', linewidth=2)
-        else:
-            plt.plot(pop_conv_gen[:,0], pop_conv_gen[:,1], 'b-', label='Population Convergence (by generation)', linewidth=2)
+        pop_conv = np.loadtxt(os.path.join(pop_dir, 'convergenceOptimumBased.txt'))
+        plt.plot(pop_conv[:,0], pop_conv[:,1], 'b-', label='Population Convergence', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find population convergence data")
     
@@ -631,14 +559,14 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory convergence data")
     
-    plt.xlabel('Evaluations')
+    plt.xlabel('Generation/Iteration')
     plt.ylabel('Convergence Rate')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'combined_convergence.png'), dpi=300, bbox_inches='tight')
     plt.clf()
-    '''
+
     plt.figure(figsize=(12, 8))
     try:
         pop_div = np.loadtxt(os.path.join(pop_dir, 'entropyDiversity.txt'))
@@ -652,25 +580,18 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory diversity data")
     
-    plt.xlabel('Evaluations')
+    plt.xlabel('Generation/Iteration')
     plt.ylabel('Diversity')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, 'combined_diversity.png'), dpi=300, bbox_inches='tight')
     plt.clf()
-    '''
+
     plt.figure(figsize=(12, 8))
     try:
-        pop_change_gen = np.loadtxt(os.path.join(pop_dir, 'changeInObjectiveValuePerGeneration.txt'))
-        if generation_map:
-            pop_change_eval = convert_generation_to_evaluation_based(pop_change_gen, generation_map, total_evals)
-            if len(pop_change_eval) > 0:
-                plt.plot(pop_change_eval[:,0], pop_change_eval[:,1], 'b-', label='Population Change Rate', linewidth=2)
-            else:
-                plt.plot(pop_change_gen[:,0], pop_change_gen[:,1], 'b-', label='Population Change Rate (by generation)', linewidth=2)
-        else:
-            plt.plot(pop_change_gen[:,0], pop_change_gen[:,1], 'b-', label='Population Change Rate (by generation)', linewidth=2)
+        pop_change = np.loadtxt(os.path.join(pop_dir, 'changeInObjectiveValuePerGeneration.txt'))
+        plt.plot(pop_change[:,0], pop_change[:,1], 'b-', label='Population Change Rate', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find population change data")
     
@@ -680,7 +601,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory improvement data")
     
-    plt.xlabel('Evaluations')
+    plt.xlabel('Generation/Iteration')
     plt.ylabel('Improvement/Change Rate')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
@@ -690,15 +611,8 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_geom_gen = np.loadtxt(os.path.join(pop_dir, 'geometricRateofFitnessChangePerGeneration.txt'))
-        if generation_map:
-            pop_geom_eval = convert_generation_to_evaluation_based(pop_geom_gen, generation_map, total_evals)
-            if len(pop_geom_eval) > 0:
-                plt.plot(pop_geom_eval[:,0], pop_geom_eval[:,1], 'b-', label='Population Geometric Rate', linewidth=2)
-            else:
-                plt.plot(pop_geom_gen[:,0], pop_geom_gen[:,1], 'b-', label='Population Geometric Rate (by generation)', linewidth=2)
-        else:
-            plt.plot(pop_geom_gen[:,0], pop_geom_gen[:,1], 'b-', label='Population Geometric Rate (by generation)', linewidth=2)
+        pop_geom = np.loadtxt(os.path.join(pop_dir, 'geometricRateofFitnessChangePerGeneration.txt'))
+        plt.plot(pop_geom[:,0], pop_geom[:,1], 'b-', label='Population Geometric Rate', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find population geometric rate data")
     
@@ -708,7 +622,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory geometric rate data")
     
-    plt.xlabel('Evaluations')
+    plt.xlabel('Generation/Iteration')
     plt.ylabel('Geometric Rate')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
@@ -729,7 +643,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory entropy data")
     
-    plt.xlabel('Evaluations')
+    plt.xlabel('Generation/Iteration')
     plt.ylabel('Entropy Diversity')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
@@ -739,15 +653,8 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_hamming_gen = np.loadtxt(os.path.join(pop_dir, 'hammingDistanceBestSolutionPerGeneration.txt'))
-        if generation_map:
-            pop_hamming_eval = convert_generation_to_evaluation_based(pop_hamming_gen, generation_map, total_evals)
-            if len(pop_hamming_eval) > 0:
-                plt.plot(pop_hamming_eval[:,0], pop_hamming_eval[:,1], 'b-', label='Population Hamming Distance', linewidth=2)
-            else:
-                plt.plot(pop_hamming_gen[:,0], pop_hamming_gen[:,1], 'b-', label='Population Hamming Distance (by generation)', linewidth=2)
-        else:
-            plt.plot(pop_hamming_gen[:,0], pop_hamming_gen[:,1], 'b-', label='Population Hamming Distance (by generation)', linewidth=2)
+        pop_hamming = np.loadtxt(os.path.join(pop_dir, 'hammingDistanceBestSolutionPerGeneration.txt'))
+        plt.plot(pop_hamming[:,0], pop_hamming[:,1], 'b-', label='Population Hamming Distance', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find population hamming distance data")
     
@@ -757,7 +664,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory hamming distance data")
     
-    plt.xlabel('Evaluations')
+    plt.xlabel('Generation/Iteration')
     plt.ylabel('Hamming Distance')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
@@ -767,15 +674,8 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_error_gen = np.loadtxt(os.path.join(pop_dir, 'relError.txt'))
-        if generation_map:
-            pop_error_eval = convert_generation_to_evaluation_based(pop_error_gen, generation_map, total_evals)
-            if len(pop_error_eval) > 0:
-                plt.plot(pop_error_eval[:,0], pop_error_eval[:,1], 'b-', label='Population Relative Error', linewidth=2)
-            else:
-                plt.plot(pop_error_gen[:,0], pop_error_gen[:,1], 'b-', label='Population Relative Error (by generation)', linewidth=2)
-        else:
-            plt.plot(pop_error_gen[:,0], pop_error_gen[:,1], 'b-', label='Population Relative Error (by generation)', linewidth=2)
+        pop_error = np.loadtxt(os.path.join(pop_dir, 'relError.txt'))
+        plt.plot(pop_error[:,0], pop_error[:,1], 'b-', label='Population Relative Error', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find population error data")
     
@@ -785,7 +685,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory error data")
     
-    plt.xlabel('Evaluations')
+    plt.xlabel('Generation/Iteration')
     plt.ylabel('Error Rate / Relative Error')
     plt.legend()
     plt.grid(True, linestyle='--', alpha=0.7)
@@ -796,10 +696,10 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
     
     try:
-        pop_obj_gen = np.loadtxt(os.path.join(pop_dir, 'objectiveValueBestSolutionOverTime.txt'))
+        pop_obj = np.loadtxt(os.path.join(pop_dir, 'objectiveValueBestSolutionOverTime.txt'))
         traj_obj = np.loadtxt(os.path.join(traj_dir, 'FevalsBest.txt'))
         
-        final_values = [pop_obj_gen[-1,1], traj_obj[-1]]
+        final_values = [pop_obj[-1,1], traj_obj[-1]]
         algorithms = ['Population', 'Trajectory']
         colors = ['blue', 'red']
         
@@ -810,20 +710,12 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
         ax1.text(0.5, 0.5, 'Data not available', ha='center', va='center', transform=ax1.transAxes)
     
     try:
-        pop_conv_gen = np.loadtxt(os.path.join(pop_dir, 'convergenceOptimumBased.txt'))
+        pop_conv = np.loadtxt(os.path.join(pop_dir, 'convergenceOptimumBased.txt'))
         traj_conv = np.loadtxt(os.path.join(traj_dir, 'ConvRateOpt.txt'))
         
-        if generation_map:
-            pop_conv_eval = convert_generation_to_evaluation_based(pop_conv_gen, generation_map, total_evals)
-            if len(pop_conv_eval) > 0:
-                ax2.plot(pop_conv_eval[:,0], pop_conv_eval[:,1], 'b-', label='Population', linewidth=2)
-            else:
-                ax2.plot(pop_conv_gen[:,0], pop_conv_gen[:,1], 'b-', label='Population', linewidth=2)
-        else:
-            ax2.plot(pop_conv_gen[:,0], pop_conv_gen[:,1], 'b-', label='Population', linewidth=2)
-            
+        ax2.plot(pop_conv[:,0], pop_conv[:,1], 'b-', label='Population', linewidth=2)
         ax2.plot(np.arange(1, len(traj_conv) + 1), traj_conv, 'r--', label='Trajectory', linewidth=2)
-        ax2.set_xlabel('Evaluations')
+        ax2.set_xlabel('Generation/Iteration')
         ax2.set_ylabel('Convergence Rate')
         ax2.legend()
         ax2.grid(True, linestyle='--', alpha=0.3)
@@ -836,7 +728,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
         
         ax3.plot(pop_div[:,0], pop_div[:,1], 'b-', label='Population', linewidth=2)
         ax3.plot(np.arange(1, len(traj_div) + 1), traj_div, 'r--', label='Trajectory', linewidth=2)
-        ax3.set_xlabel('Evaluations')
+        ax3.set_xlabel('Generation/Iteration')
         ax3.set_ylabel('Entropy Diversity')
         ax3.legend()
         ax3.grid(True, linestyle='--', alpha=0.3)
@@ -860,13 +752,14 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     plt.savefig(os.path.join(output_dir, 'combined_summary.png'), dpi=300, bbox_inches='tight')
     plt.clf()
 
+    print(f"Combined plots saved to: {output_dir}")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Generate various performance plots from algorithm data files.')
     parser.add_argument('input_dir', type=str, nargs='?', help='Directory containing the input text files (for single algorithm analysis)')
     parser.add_argument('typeOfAnalyzer', type=str, help='Type of analyzer to use: populationBased, trayectorial, or combined')
     parser.add_argument('--pop_dir', type=str, help='Directory containing population-based algorithm data (for combined analysis)')
     parser.add_argument('--traj_dir', type=str, help='Directory containing trajectory-based algorithm data (for combined analysis)')
-    parser.add_argument('--raw_data', type=str, help='Path to the raw data .dat file (required for combined analysis)')
     args = parser.parse_args()
 
     if args.typeOfAnalyzer == 'populationBased':
@@ -876,13 +769,9 @@ if __name__ == "__main__":
     elif args.typeOfAnalyzer == 'combined':
         if not args.pop_dir or not args.traj_dir:
             print("Error: For combined analysis, both --pop_dir and --traj_dir must be specified")
-            print("Usage: python script.py --pop_dir /path/to/population/data --traj_dir /path/to/trajectory/data --raw_data /path/to/raw/data.dat combined")
+            print("Usage: python script.py --pop_dir /path/to/population/data --traj_dir /path/to/trajectory/data combined")
             exit(1)
-        if not args.raw_data:
-            print("Error: For combined analysis, --raw_data must be specified")
-            print("Usage: python script.py --pop_dir /path/to/population/data --traj_dir /path/to/trajectory/data --raw_data /path/to/raw/data.dat combined")
-            exit(1)
-        mainCombined(args.pop_dir, args.traj_dir, args.raw_data)
+        mainCombined(args.pop_dir, args.traj_dir)
     else:
         print("Invalid type of analyzer")
         print("Valid options: populationBased, trayectorial, combined")

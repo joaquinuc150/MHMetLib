@@ -6,7 +6,7 @@
 #include "../utils/prints.hpp"
 #include "../utils/utils.hpp"
 #include "../utils/SimpleMatrix.h"
-#include <Eigen/Dense>
+#include <eigen/Eigen/Dense>
 #include <cfloat>
 
 class RuntimeInfo {
@@ -17,7 +17,8 @@ class RuntimeInfo {
         double f_best;
         bool maximize = true;
 
-
+        // Metrics for search space division
+        std::vector<int> areaBySolutions; //Vector de sectores de espacio de busqueda por soluciones
         std::vector<std::vector<int>> searchSpaceAreasBySolutions; //
         std::vector<std::vector<std::vector<int>>> searchSpaceAreasBySearchAgent; //Vector de agentes, cada agente tiene un vector por sector de espacio de busqueda
         std::vector<std::vector<int>> searchSpaceAreasByGenerations; //Cada generacion tiene un vector donde la posicion es el agente y el valor es el sector de espacio de busqueda
@@ -185,6 +186,14 @@ class RuntimeInfo {
             std::vector<double> conv_rate_vector;
             for (int i = 1; i < fevals.size() - 1; i++) {
                 conv_rate_vector.push_back(conv_rate(fevals[i+1], fevals[i], fevals[i-1], maximize));
+            }
+            return conv_rate_vector;
+        }
+
+	std::vector<double> getConvRateAbs(){
+            std::vector<double> conv_rate_vector;
+            for (int i = 1; i < fevals.size() - 1; i++) {
+                conv_rate_vector.push_back(abs(conv_rate(fevals[i+1], fevals[i], fevals[i-1], maximize)));
             }
             return conv_rate_vector;
         }
@@ -407,6 +416,7 @@ class RuntimeInfo {
                                     sectorIndices[2];
                 
                 searchSpaceAreasBySolutions[sectorIndex].push_back(i);
+                areaBySolutions.push_back(sectorIndex);
             }
             
             // If we have more sectors than requested, merge excess sectors
@@ -423,23 +433,43 @@ class RuntimeInfo {
                 searchSpaceAreasBySolutions = mergedSectors;
             }
         }
-
-        std::vector<double> entropyDiversityCustomAreas(int n_areas){
-            double diversity = 0;
-            std::vector<double> areaScoresVector;
-            for (size_t i = 0; i < searchSpaceAreasBySolutions.size(); ++i) {
-                diversity = 0;
-                std::vector<double> areaScores(n_areas, 0);
-                for (size_t j = 0; j < searchSpaceAreasBySolutions[i].size(); ++j) {
-                    areaScores[searchSpaceAreasBySolutions[i][j]] += 1;
-                }
-                for (size_t j = 0; j < n_areas; ++j) {
-                    if (areaScores[j] != 0){
-                        diversity += (areaScores[j] / x.size()) * log(areaScores[j] / x.size());
-                    }
-                }
-                areaScoresVector.push_back(-diversity);
-            }
-            return areaScoresVector;
-        }
+        
+	std::vector<double> entropyDiversityCustomAreas(int n_areas){
+	    std::vector<double> areaScoresVector;
+	    const int windowSize = 10;
+	    
+	    // Procesar en ventanas de 10 soluciones
+	    for (size_t windowStart = 0; windowStart < areaBySolutions.size(); windowStart += windowSize) {
+	        // Calcular el final de la ventana (puede ser menor que windowSize en la última ventana)
+	        size_t windowEnd = std::min(windowStart + windowSize, areaBySolutions.size());
+	        
+	        // Resetear contadores para cada ventana
+	        std::vector<double> areaScores(n_areas, 0);
+	        
+	        // Contar visitas en la ventana actual
+	        for (size_t i = windowStart; i < windowEnd; ++i) {
+	            // Skip si está fuera de bounds
+	            if (areaBySolutions[i] >= n_areas || areaBySolutions[i] < 0) {
+	                continue;
+	            }
+	            // Incrementar contador del área visitada en esta ventana
+	            areaScores[areaBySolutions[i]] += 1;
+	        }
+	        
+	        // Calcular entropía para esta ventana
+	        double diversity = 0.0;
+	        double totalVisits = windowEnd - windowStart;
+	        
+	        for (size_t j = 0; j < n_areas; ++j) {
+	            if (areaScores[j] > 0) {
+	                double probability = areaScores[j] / totalVisits;
+	                diversity += probability * log(probability);
+	            }
+	        }
+	        
+	        areaScoresVector.push_back(-diversity);  // Entropía de Shannon (negativa)
+	    }
+	    
+	    return areaScoresVector;
+	}
 };

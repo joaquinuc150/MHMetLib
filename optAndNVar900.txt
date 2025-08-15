@@ -1,0 +1,4 @@
+OneMax 900 900
+OneMaxRuggedness2 900 900
+IsingTorus 1800 900
+NQueens 30 900

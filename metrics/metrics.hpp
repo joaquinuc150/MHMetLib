@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <cmath>
 #include <map>
-#include <eigen3/Eigen/Dense>
+#include <eigen/Eigen/Dense>
 #include "SimpleMatrix.h"
 #include <unordered_set>
 #include <cfloat>
@@ -829,6 +829,28 @@ namespace ioh {
                     }
                     return convergence;
                 }
+
+		std::vector<double> relError(int optimum, bool maxProblem) {
+                    std::vector<double> error;
+                    if (maxProblem) {
+                        for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
+                            double errorStep = 0;
+                            //Use best individual in each generation
+                            double max = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
+                            errorStep = 1 - (max / optimum);
+                            error.push_back(errorStep);
+                        }
+                    } else {
+                        for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
+                            double errorStep = 0;
+                            //Use best individual in each generation
+                            double min = *std::min_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
+                            errorStep = 1 - (optimum/min);
+                            error.push_back(errorStep);
+                        }
+                    }
+                    return error;
+                }
             
                 std::vector<std::vector<double>> calculateConvergenceStepsPerIndividual(int n_firstGen, int n_children) {
                     if (dataNames.empty()) {
@@ -976,7 +998,7 @@ namespace ioh {
                     for (size_t i = 1; i < xVectorsProcessed.size(); ++i) {
                         size_t maxIndex = std::distance(objectiveValuePerGeneration[i].begin(), 
                                         std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end()));
-                        hammingDistances.push_back(hammingDistance(xVectorsProcessed[0][0], xVectorsProcessed[i][maxIndex]));
+                        hammingDistances.push_back(hammingDistance(xVectorsProcessed[0][0], xVectorsProcessed[i][maxIndex])/n_var);
                     }
                     return hammingDistances;
                 }
@@ -989,7 +1011,7 @@ namespace ioh {
                                         std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end()));
                         size_t maxIndexPrevious = std::distance(objectiveValuePerGeneration[i - 1].begin(), 
                                         std::max_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end()));
-                        hammingDistances.push_back(hammingDistance(xVectorsProcessed[i - 1][maxIndexPrevious], xVectorsProcessed[i][maxIndex]));
+                        hammingDistances.push_back(hammingDistance(xVectorsProcessed[i - 1][maxIndexPrevious], xVectorsProcessed[i][maxIndex])/n_var);
                     }
                     return hammingDistances;
                 }
@@ -1011,7 +1033,7 @@ namespace ioh {
                         if (data[index][i*n_children] > data[index][i*n_children - 1]) {
                             bestGlobalSolution = xVectorsProcessed[i][maxIndex];
                         }
-                        hammingDistances.push_back(hammingDistance(bestGlobalSolution, xVectorsProcessed[i][maxIndex]));
+                        hammingDistances.push_back(hammingDistance(bestGlobalSolution, xVectorsProcessed[i][maxIndex])/n_var);
                     }
                     return hammingDistances;
                 }
