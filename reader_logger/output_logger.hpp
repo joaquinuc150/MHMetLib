@@ -56,11 +56,7 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         std::cout << "SpheresAreas: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-<<<<<<< HEAD
         output_file_vector(filePathOutput, "ConvRate", data[i].getConvRateAbs());
-=======
-        output_file_vector(filePathOutput, "ConvRate", data[i].getConvRate());
->>>>>>> 32ae752f1737c421a8627eecc950074fb12ffef3
         end = std::chrono::high_resolution_clock::now();
         std::cout << "ConvRate: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
