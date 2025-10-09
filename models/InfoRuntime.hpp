@@ -9,17 +9,23 @@
 #include <eigen/Eigen/Dense>
 #include <cfloat>
 
+struct Domain {
+    double min;
+    double max;
+};
+
 class RuntimeInfo {
     private:
         std::vector<double> fevals;
         double time;
         std::vector<std::vector<double>> x; // xVectorsPerEvaluation
+        std::vector<Domain> domains;
         double f_best;
         bool maximize = true;
 
         // Metrics for search space division
         std::vector<int> areaBySolutions; //Vector de sectores de espacio de busqueda por soluciones
-        std::vector<std::vector<int>> searchSpaceAreasBySolutions; //
+        std::vector<std::vector<int>> searchSpaceAreasBySolutions;
         std::vector<std::vector<std::vector<int>>> searchSpaceAreasBySearchAgent; //Vector de agentes, cada agente tiene un vector por sector de espacio de busqueda
         std::vector<std::vector<int>> searchSpaceAreasByGenerations; //Cada generacion tiene un vector donde la posicion es el agente y el valor es el sector de espacio de busqueda
         Eigen::MatrixXd dissimilarity_matrix;
@@ -29,6 +35,20 @@ class RuntimeInfo {
 
     public:
         RuntimeInfo() {
+            fevals = {};
+            time = {};
+            x = {};
+            f_best = 0;
+        }
+
+        RuntimeInfo(bool maximize) : maximize(maximize) {
+            fevals = {};
+            time = {};
+            x = {};
+            f_best = 0;
+        }
+
+        RuntimeInfo(bool maximize, std::vector<Domain> domains) : maximize(maximize), domains(domains) {
             fevals = {};
             time = {};
             x = {};
@@ -97,7 +117,7 @@ class RuntimeInfo {
         void calculateIntensify() {
             intensify_vector = {};
             for (int i = 1; i < fevals.size(); i++) {
-                intensify_vector.push_back(fevals[i] > fevals[i-1]);
+                intensify_vector.push_back(maximize ? fevals[i] >= fevals[i-1] : fevals[i] <= fevals[i-1]);
             }
         }
 
@@ -151,29 +171,39 @@ class RuntimeInfo {
             return entropy_vector;
         }
 
-        std::vector<double> getSpheresAreas(int n) {
+        // Calcula los radios de las esferas
+        std::vector<double> getSpheresAreas(int n, const std::vector<std::vector<double>>& x) {
             std::vector<double> spheres_areas;
-            double max_area = x[0].size();
+            double max_area = sqrt(x[0].size()); // esto depende de tu definición de "radio máximo"
             double min_area = 0;
 
             for (int i = 1; i <= n; i++) {
                 spheres_areas.push_back(min_area + i * (max_area - min_area) / n);
             }
-            
+
             return spheres_areas;
         }
 
-        std::vector<double> getSpheresAreasForIteration(int n) {
+        // Calcula en qué esfera cae cada punto, pero respecto a un centro arbitrario p
+        std::vector<double> getSpheresAreasForIteration(
+            int n,
+            const std::vector<std::vector<double>>& x,
+            const std::vector<double>& p
+        ) {
             n = n == -1 ? x[0].size() : n;
-            std::vector<double> spheres_areas = getSpheresAreas(n);
+            std::vector<double> spheres_areas = getSpheresAreas(n, x);
             std::vector<double> spheres_areas_for_iteration;
 
             for (int i = 0; i < x.size(); i++) {
-                double sum = 0;
-                sum = std::reduce(x[i].begin(), x[i].end(), 0.0);
-                
+                double distance = 0;
+                for (int j = 0; j < x[i].size(); j++) {
+                    double diff = x[i][j] - p[j]; // resta respecto al centro
+                    distance += diff * diff;
+                }
+                distance = sqrt(distance);
+
                 for (int j = 0; j < spheres_areas.size(); j++) {
-                    if (sum <= spheres_areas[j]) {
+                    if (distance <= spheres_areas[j]) {
                         spheres_areas_for_iteration.push_back(j);
                         break;
                     }
@@ -190,7 +220,7 @@ class RuntimeInfo {
             return conv_rate_vector;
         }
 
-	std::vector<double> getConvRateAbs(){
+	    std::vector<double> getConvRateAbs(){
             std::vector<double> conv_rate_vector;
             for (int i = 1; i < fevals.size() - 1; i++) {
                 conv_rate_vector.push_back(abs(conv_rate(fevals[i+1], fevals[i], fevals[i-1], maximize)));

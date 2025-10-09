@@ -462,6 +462,48 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer metricsAnalyzer, int n_fir
     summary_file.close();
 }
 
+std::map<std::string, std::string> readConfig(const std::string& filename) {
+    std::map<std::string, std::string> config;
+    std::ifstream file(filename);
+    std::string line;
+    while (std::getline(file, line)) {
+        if(line.empty() || line[0] == '#') continue;
+        std::istringstream ss(line);
+        std::string key, value;
+        if (std::getline(ss, key, '=') && std::getline(ss, value)) {
+            config[key] = value;
+        }
+    }
+    return config;
+}
+
+std::vector<Domain> generarDominios(const std::string& archivo, int numVars) {
+    std::vector<Domain> dominios(numVars, {0, 0});
+    std::ifstream file(archivo);
+    std::string linea;
+    bool todos = false;
+
+    while (std::getline(file, linea)) {
+        std::istringstream iss(linea);
+        std::string nombre;
+        double minimo, maximo;
+        if (iss >> nombre >> minimo >> maximo) {
+            if (nombre == "all") {
+                for (int i = 0; i < numVars; ++i) {
+                    dominios[i] = {minimo, maximo};
+                }
+                todos = true;
+            } else if (!todos && nombre[0] == 'x') {
+                int idx = std::stoi(nombre.substr(1)) - 1;
+                if (idx >= 0 && idx < numVars) {
+                    dominios[idx] = {minimo, maximo};
+                }
+            }
+        }
+    }
+    return dominios;
+}
+
 int main(int argc, char **argv) {
     std::string typeOfAnalyzer = "";
     std::string route = "";
@@ -495,20 +537,23 @@ int main(int argc, char **argv) {
         typeOfAnalyzer = "populationBased";
     }
     else {
-        std::cout << "Using trayectorialMetrics class" << std::endl;
-        std::cout << "Number of arguments provided: " << argc - 1 << std::endl;
-        
-        bool maxProblem = true;
+        auto config = readConfig("config.cnf");
+        std::string path = config["path"];
+        int n = std::stoi(config["n"]);
+        int entropySize = std::stoi(config["entropySize"]);
+        int hammingDistanceVariant = std::stoi(config["hammingDistanceVariant"]);
+        bool maxProblem = (config["maxProblem"] == "true");
+        std::string typeOfAnalyzer = config["typeOfAnalyzer"];
+        bool customDomain = (config["customDomain"] == "true");
 
-        string path = argv[1];
-        int n = stoi(argv[2]);
-        int entropySize = stoi(argv[3]);
+        if (customDomain) {
+            std::string domainFile = config["domainFile"];
+            std::vector<Domain> domains = generarDominios(domainFile, n);
+        }
 
         route = path + "/";
 
-        outputMetrics(path, n, entropySize);
-
-        typeOfAnalyzer = "trayectorialMetrics";
+        outputMetrics(path, n, entropySize, hammingDistanceVariant, maxProblem);
     }
 
     /*std::cout << "Plotting data" << std::endl;
