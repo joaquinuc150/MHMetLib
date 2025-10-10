@@ -12,19 +12,37 @@
 #include <cfloat>
 namespace ioh {
     namespace common {
+        enum class HammingDistanceType {
+            FIRST_GEN_BEST,
+            PREVIOUS_GEN_BEST,
+            GLOBAL_BEST
+        };
+        
+        enum class DiversityCenterType {
+            ZERO_CENTER,
+            BEST_INDIVIDUAL_CENTER,
+            CUSTOM_CENTER
+        };
+
+        struct Domain {
+            double min;
+            double max;
+        };
+
         class MetricsAnalyzer {
             private:
-                int n_var, n_firstGen, n_children; //Variables for variable number, first generation solutions and children number
-                bool maxProblem = false; //Boolean to determine if the problem is maximization or minimization
+                static constexpr double AVOID_ZERO = 1e-10;
+                int n_var, n_firstGen, n_children;
+                bool maxProblem = false;
                 std::vector<std::vector<double>> data;
                 std::vector<std::string> dataNames;
                 std::vector<std::vector<double>> xVectorsPerEvaluation;
                 std::vector<std::vector<std::vector<double>>> xVectorsPerGeneration;
                 std::vector<std::vector<std::vector<double>>> xVectorsProcessed;
                 std::vector<std::vector<double>> hammingDistances;
-                std::vector<std::vector<int>> searchSpaceAreasBySolutions; //
-                std::vector<std::vector<std::vector<int>>> searchSpaceAreasBySearchAgent; //Vector de agentes, cada agente tiene un vector por sector de espacio de busqueda
-                std::vector<std::vector<int>> searchSpaceAreasByGenerations; //Cada generacion tiene un vector donde la posicion es el agente y el valor es el sector de espacio de busqueda
+                std::vector<std::vector<int>> searchSpaceAreasBySolutions;
+                std::vector<std::vector<std::vector<int>>> searchSpaceAreasBySearchAgent;
+                std::vector<std::vector<int>> searchSpaceAreasByGenerations;
                 Eigen::MatrixXd dissimilarity_matrix;
                 Eigen::MatrixXd xMatrix;
                 std::vector<std::vector<double>> objectiveValuePerGeneration;
@@ -32,8 +50,6 @@ namespace ioh {
                 std::vector<std::vector<double>> mutationImprovement;
 
             public:
-            //SECCION 1: UTILIDADES
-                //Initialize n_var, n_firstGen and n_children
                 MetricsAnalyzer(int n_var, int n_firstGen, int n_children, bool maxProblem) : n_var(n_var), n_firstGen(n_firstGen), n_children(n_children), maxProblem(maxProblem) {}
                 std::vector<std::string> splitString(const std::string& str, char delimiter) {
                     std::vector<std::string> tokens;
@@ -51,7 +67,6 @@ namespace ioh {
                     if (r > n) return 0;
                     if (r == 0 || r == n) return 1;
 
-                    // Ensure r is the smaller of n-r and r for efficiency
                     if (r > n - r) r = n - r;
 
                     long long result = 1;
@@ -98,24 +113,7 @@ namespace ioh {
                     } else {
                         std::cerr << "Failed to open data file: " << filename << std::endl;
                     }
-
-                    /*
-                    std::cout << "Data names: ";
-                    for (const std::string& name : dataNames) {
-                        std::cout << name << " ";
-                    }
-                    std::cout << std::endl;
-
-                    std::cout << "Data: " << std::endl;
-                    for (size_t i = 0; i < data.size(); ++i) {
-                        std::cout << dataNames[i] << ": ";
-                        for (size_t j = 0; j < data[i].size(); ++j) {
-                            std::cout << data[i][j] << " ";
-                        }
-                        std::cout << std::endl;
-                    }*/
                 }
-                //No longer needed
                 void postProcessData(int n_firstGen, int n_children){
                     int childrenCounter = 0;
                     int genCounter = 1;
@@ -167,7 +165,6 @@ namespace ioh {
                             flag = false;
                         }
                     }
-                    //Case for last generation
                     if (data[genIndex][data[genIndex].size() - 1] != data[genIndex][data[genIndex].size() - 2]){
                         for (int j = 0; j < n_children - 1; ++j) {
                             for (size_t k = 0; k < dataNames.size(); ++k) {
@@ -213,7 +210,6 @@ namespace ioh {
                         }
                     }
                     this->xMatrix = xMatrix;
-                    //std::cout << xMatrix << std::endl;
                 }
 
                 void createXVectorsPerGeneration(){
@@ -270,12 +266,10 @@ namespace ioh {
                     int genIndex = getIndex(dataNames, "generation");
                     int index = getIndex(dataNames, "raw_y");
                     int counter = 0;
-                    //FirstGen
                     objectiveValuePerGeneration.push_back(std::vector<double>());
                     for (int i = 0; i < n_firstGen; ++i) {
                         objectiveValuePerGeneration[0].push_back(0);
                     }
-                    //Rest of generations
                     for (size_t i = 1; i <= data[genIndex][data[genIndex].size() - 1]; ++i) {
                         objectiveValuePerGeneration.push_back(std::vector<double>());
                         for (int j = 0; j < n_children; ++j) {
@@ -293,7 +287,6 @@ namespace ioh {
                             ++counter;
                         }
                     }
-                    //PostProcessing
                     for (size_t i = 0; i < objectiveValuePerGeneration.size(); ++i) {
                         for (size_t j = 0; j < objectiveValuePerGeneration[i].size(); ++j) {
                             if (objectiveValuePerGeneration[i][j] == 0) {
@@ -301,12 +294,6 @@ namespace ioh {
                             }
                         }
                     }
-                    /*
-                    for (size_t i = 0; i < objectiveValuePerGeneration.size(); ++i) {
-                        for (size_t j = 0; j < objectiveValuePerGeneration[i].size(); ++j) {
-                            std::cout << "Generation " << i << " Agent " << j << " Objective Value: " << objectiveValuePerGeneration[i][j] << std::endl;
-                        }
-                    }*/
                 }
 
                 void postProcessGenerations(){
@@ -354,7 +341,6 @@ namespace ioh {
                     return distance;
                 }
 
-                //Create specifier for type of operator (swap, bit-flip, etc)
                 double hammingDistance(std::vector<double> x1, std::vector<double> x2){
                     if (x1.size() != x2.size()) {
                         std::cerr << "Vectors must have the same length" << std::endl;
@@ -392,8 +378,6 @@ namespace ioh {
                         }
                     }
                     dissimilarity_matrix = dissimilarityMatrix;
-                    //std::cout << "Dissimilarity Matrix: " << std::endl;
-                    //std::cout << dissimilarity_matrix << std::endl;
                 }
 
                 void MDS3(){
@@ -413,118 +397,17 @@ namespace ioh {
                     }
                     smat::Matrix<double> *X1 = MDS_SMACOF(D, NULL, 3, 30); 
                     X1->saveTxt("X1.txt");
-                    //smat -> eigen?
                 }
 
-                void MDSSearchSpaceDivisionBySolutions(){
-                    MDS3();
-                    //Open X1.txt
-                    std::vector <std::vector<int>> X1;
-                    std::ifstream file("X1.txt");
-                    int counter = 0;
-                    int maxX = 0;
-                    int minX = 0;
-                    int maxY = 0;
-                    int minY = 0;
-                    int maxZ = 0;
-                    int minZ = 0;
-                    if (file.is_open()) {
-                        std::string line;
-                        while (std::getline(file, line)) {
-                            std::vector<int> columns;
-                            std::string value;
-                            int valueCast;
-                            double valueCast2;
-                            std::stringstream ss(line);
-                            while (ss >> value){
-                                valueCast2 = std::stod(value);
-                                valueCast = std::round(valueCast2);
-                                if (counter == 0)
-                                    if (valueCast > maxX)
-                                        maxX = valueCast;
-                                    if (valueCast < minX)
-                                        minX = valueCast;
-                                else if (counter == 1)
-                                    if (valueCast > maxY)
-                                        maxY = valueCast;
-                                    if (valueCast < minY)
-                                        minY = valueCast;
-                                else if (counter == 2){
-                                    if (valueCast > maxZ)
-                                        maxZ = valueCast;
-                                    if (valueCast < minZ)
-                                        minZ = valueCast;
-                                }
-                                counter++;
-                                if (counter == 3)
-                                    counter = 0;
-                                columns.push_back(valueCast);
-                            }
-                            X1.push_back(columns);
-                        }
-                        file.close();
-                    } else {
-                        std::cerr << "Failed to open data file: " << "X1.txt" << std::endl;
-                    }
-                    //SearchSpaceDivision
-                    int midX = (maxX + minX) / 2;
-                    int midY = (maxY + minY) / 2;
-                    int midZ = (maxZ + minZ) / 2;
-                    
-                    for (size_t i = 0; i < 8; ++i) {
-                        searchSpaceAreasBySolutions.push_back(std::vector<int>());
-                    }
-                    //std::cout << "X1 size: " << X1.size() << std::endl;
-                    for (size_t i = 0; i < X1.size(); ++i) {
-                        if (X1[i][0] < midX && X1[i][1] < midY && X1[i][2] < midZ) {
-                            searchSpaceAreasBySolutions[0].push_back(i);
-                        } else if (X1[i][0] < midX && X1[i][1] < midY && X1[i][2] >= midZ) {
-                            searchSpaceAreasBySolutions[1].push_back(i);
-                        } else if (X1[i][0] < midX && X1[i][1] >= midY && X1[i][2] < midZ) {
-                            searchSpaceAreasBySolutions[2].push_back(i);
-                        } else if (X1[i][0] < midX && X1[i][1] >= midY && X1[i][2] >= midZ) {
-                            searchSpaceAreasBySolutions[3].push_back(i);
-                        } else if (X1[i][0] >= midX && X1[i][1] < midY && X1[i][2] < midZ) {
-                            searchSpaceAreasBySolutions[4].push_back(i);
-                        } else if (X1[i][0] >= midX && X1[i][1] < midY && X1[i][2] >= midZ) {
-                            searchSpaceAreasBySolutions[5].push_back(i);
-                        } else if (X1[i][0] >= midX && X1[i][1] >= midY && X1[i][2] < midZ) {
-                            searchSpaceAreasBySolutions[6].push_back(i);
-                        } else if (X1[i][0] >= midX && X1[i][1] >= midY && X1[i][2] >= midZ) {
-                            searchSpaceAreasBySolutions[7].push_back(i);
-                        } else {
-                            std::cout << "Error in search space division" << std::endl;
-                        }
-                    }   
-                        /* 
-                    std::cout << "Search Space Division by Solutions" << std::endl;
-                    for (size_t i = 0; i < searchSpaceAreasBySolutions.size(); ++i) {
-                        std::cout << "Area " << i << ": ";
-                        std::cout << "Area size: " << searchSpaceAreasBySolutions[i].size() << " ";
-                        std::cout << std::endl;
-                        std::cout << "Area elements: ";
-                        std::cout << std::endl;
-                        for (size_t j = 0; j < searchSpaceAreasBySolutions[i].size(); ++j) {
-                            std::cout << searchSpaceAreasBySolutions[i][j] << " ";
-                        }
-                        std::cout << std::endl;
-                    }*/   
-                }
-
-                void MDSSearchSpaceDivisionCustomSectors(int targetSectors) {
-                    // Calculate divisions needed per dimension to approximate target sectors
+                void MDSSearchSpaceDivision(int targetSectors = 8) {
                     int divisionsPerDim = std::ceil(std::cbrt(targetSectors));
                     int actualSectors = std::pow(divisionsPerDim, 3);
-
-                    std::cout << "Divisions per dimension: " << divisionsPerDim << std::endl;
-                    std::cout << "Actual sectors: " << actualSectors << std::endl;
                     
                     MDS3();
                     std::vector<std::vector<int>> X1;
                     std::vector<double> maxVals = {-DBL_MAX, -DBL_MAX, -DBL_MAX};
                     std::vector<double> minVals = {DBL_MAX, DBL_MAX, DBL_MAX};
                     
-                    // Read file and find bounds
                     std::ifstream file("X1.txt");
                     if (file.is_open()) {
                         std::string line;
@@ -571,7 +454,6 @@ namespace ioh {
                         searchSpaceAreasBySolutions[sectorIndex].push_back(i);
                     }
                     
-                    // If we have more sectors than requested, merge excess sectors
                     if (actualSectors > targetSectors) {
                         std::vector<std::vector<int>> mergedSectors(targetSectors);
                         for (int i = 0; i < actualSectors; i++) {
@@ -600,26 +482,11 @@ namespace ioh {
                             searchSpaceAreasBySearchAgent[agent][i].push_back(searchSpaceAreasBySolutions[i][j]);
                         }
                     }
-                    /*
-                    for (size_t i = 0; i < searchSpaceAreasBySearchAgent.size(); ++i) {
-                        for (size_t j = 0; j < searchSpaceAreasBySearchAgent[i].size(); ++j) {
-                            std::cout << "Agent " << i << " Area " << j << ": ";
-                            std::cout << "Area size: " << searchSpaceAreasBySearchAgent[i][j].size() << " ";
-                            std::cout << std::endl;
-                            std::cout << "Area elements: ";
-                            std::cout << std::endl;
-                            for (size_t k = 0; k < searchSpaceAreasBySearchAgent[i][j].size(); ++k) {
-                                std::cout << searchSpaceAreasBySearchAgent[i][j][k] << " ";
-                            }
-                            std::cout << std::endl;
-                        }
-                    }*/
                 }
 
                 void SearchSpaceDivisionByGeneration(){
                     int genIndex = getIndex(dataNames, "generation");
                     int agent = 0;
-                    //firstGen
                     searchSpaceAreasByGenerations.push_back(std::vector<int>());
                     for (size_t j = 0; j < this->n_firstGen; ++j) {
                         searchSpaceAreasByGenerations[0].push_back(-1);
@@ -655,7 +522,6 @@ namespace ioh {
                         }
                     }
 
-                    //PostProcessing
                     for (size_t i = 0; i < searchSpaceAreasByGenerations.size(); ++i) {
                         for (size_t j = 0; j < searchSpaceAreasByGenerations[i].size(); ++j) {
                             if (searchSpaceAreasByGenerations[i][j] == -1) {
@@ -664,8 +530,6 @@ namespace ioh {
                         }
                     }
                 }
-
-
 
                 std::vector<std::vector<double>> getCrossoverImprovement(){
                     return crossoverImprovement;
@@ -686,14 +550,12 @@ namespace ioh {
                         return seed;
                     }
                 };
-                // Custom equality comparator for vectors
                 template <typename T>
                 struct VectorEqual {
                     bool operator()(const std::vector<T>& a, const std::vector<T>& b) const {
                         return a == b;
                     }
                 };
-                // Function to get unique solutions
                 template <typename T>
                 std::vector<std::vector<T>> getUniqueSolutions(const std::vector<std::vector<T>>& solutions) {
                     std::unordered_set<std::vector<T>, VectorHash<T>, VectorEqual<T>> uniqueSolutions;
@@ -713,8 +575,6 @@ namespace ioh {
                     return sqrt(distance);
                 }
 
-
-            //Seccion 2: Metricas de eficiencia
                 std::vector<double> objectiveValueOverTime() {
                     if (dataNames.empty()) {
                         std::cerr << "No data available" << std::endl;
@@ -729,6 +589,7 @@ namespace ioh {
                         return objectiveValue;
                     } else {
                         std::cerr << "No data" << std::endl;
+                        return {};
                     }
                 }
 
@@ -742,7 +603,6 @@ namespace ioh {
                     if (index != -1) {
                         std::vector<double> objectiveValue;
                         for (size_t j = 0; j < data[index].size(); ++j) {
-                            //Only add when there is a change in generation
                             if (j == 0 || data[genIndex][j] != data[genIndex][j - 1] || j == data[index].size() - 1) {
                                 objectiveValue.push_back(data[index][j - 1]);
                             }
@@ -750,6 +610,7 @@ namespace ioh {
                         return objectiveValue;
                     } else {
                         std::cerr << "No data" << std::endl;
+                        return {};
                     }
                 }
 
@@ -766,13 +627,11 @@ namespace ioh {
                 }
 
                 std::vector<std::vector<double>> rateOfChangePerIndividualPerGeneration(int optimum, int n_firstGen, int n_children){
-                    //Check how many individuals are in each generation
                     std::cout << "Number of individuals in each generation: " << n_children << std::endl;
                     std::vector<std::vector<double>> objectiveValuePerInividualPerGeneration;
                     for (size_t i = 0; i < n_children; ++i) {
                         objectiveValuePerInividualPerGeneration.push_back(std::vector<double>());
                     }
-                    //Compare objective value of individuals vs optimum
                     for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
                         for (size_t j = 0; j < objectiveValuePerGeneration[i].size(); ++j) {
                             objectiveValuePerInividualPerGeneration[j].push_back(objectiveValuePerGeneration[i][j] - optimum);
@@ -787,10 +646,15 @@ namespace ioh {
                     if (maxProblem) {
                     for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
                         double convergenceStep = 0;
-                        //Use best individual in each generation
                         double max = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
                         double maxPrevious = *std::max_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
-                        convergenceStep = (optimum - max) / (optimum - maxPrevious);
+                        
+                        double denominator = optimum - maxPrevious;
+                        if (std::abs(denominator) < AVOID_ZERO) {
+                            denominator = AVOID_ZERO;
+                        }
+                        
+                        convergenceStep = (optimum - max) / denominator;
                         convergence.push_back(convergenceStep);
                     }
                     return convergence;
@@ -798,10 +662,15 @@ namespace ioh {
                     else {
                         for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
                             double convergenceStep = 0;
-                            //Use best individual in each generation
                             double min = *std::min_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
                             double minPrevious = *std::min_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
-                            convergenceStep = (min - optimum) / (minPrevious - optimum);
+                            
+                            double denominator = minPrevious - optimum;
+                            if (std::abs(denominator) < AVOID_ZERO) {
+                                denominator = AVOID_ZERO;
+                            }
+                            
+                            convergenceStep = (min - optimum) / denominator;
                             convergence.push_back(convergenceStep);
                         }
                         return convergence;
@@ -813,39 +682,59 @@ namespace ioh {
                     if (maxProblem) {
                         for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
                             double convergenceStep = 0;
-                            //Use best individual in each generation
                             double max = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
-                            convergenceStep = 1 - (optimum - max) / (optimum);
+                            
+                            double denominator = optimum;
+                            if (std::abs(denominator) < AVOID_ZERO) {
+                                denominator = AVOID_ZERO;
+                            }
+                            
+                            convergenceStep = 1 - (optimum - max) / denominator;
                             convergence.push_back(convergenceStep);
                         }
                     } else {
                         for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
                             double convergenceStep = 0;
-                            //Use best individual in each generation
                             double min = *std::min_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
-                            convergenceStep = 1 - (min - optimum) / (min);
+                            
+                            double denominator = min;
+                            if (std::abs(denominator) < AVOID_ZERO) {
+                                denominator = AVOID_ZERO;
+                            }
+                            
+                            convergenceStep = 1 - (min - optimum) / denominator;
                             convergence.push_back(convergenceStep);
                         }
                     }
                     return convergence;
                 }
 
-		std::vector<double> relError(int optimum, bool maxProblem) {
+                std::vector<double> relError(int optimum, bool maxProblem) {
                     std::vector<double> error;
                     if (maxProblem) {
                         for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
                             double errorStep = 0;
-                            //Use best individual in each generation
                             double max = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
-                            errorStep = 1 - (max / optimum);
+                            
+                            double denominator = optimum;
+                            if (std::abs(denominator) < AVOID_ZERO) {
+                                denominator = AVOID_ZERO;
+                            }
+                            
+                            errorStep = 1 - (max / denominator);
                             error.push_back(errorStep);
                         }
                     } else {
                         for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
                             double errorStep = 0;
-                            //Use best individual in each generation
                             double min = *std::min_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
-                            errorStep = 1 - (optimum/min);
+                            
+                            double denominator = min;
+                            if (std::abs(denominator) < AVOID_ZERO) {
+                                denominator = AVOID_ZERO;
+                            }
+                            
+                            errorStep = 1 - (optimum / denominator);
                             error.push_back(errorStep);
                         }
                     }
@@ -857,7 +746,7 @@ namespace ioh {
                         std::cerr << "No data available" << std::endl;
                         return {};
                     }
-                    //Use objectiveValuePerGeneration
+                    
                     std::vector<std::vector<double>> convergence;
                     double convergenceStep;
                     for (size_t i = 0; i < n_children; ++i) {
@@ -866,10 +755,12 @@ namespace ioh {
 
                     for (size_t i = 1; i < objectiveValuePerGeneration.size() - 1; ++i) {
                         for (size_t j = 0; j < n_children; ++j) {
-                            if (objectiveValuePerGeneration[i][j] == objectiveValuePerGeneration[i - 1][j]) {
+                            double denominator = objectiveValuePerGeneration[i][j] - objectiveValuePerGeneration[i - 1][j];
+                            
+                            if (std::abs(denominator) < AVOID_ZERO) {
                                 convergenceStep = 0;
                             } else {
-                                convergenceStep = (objectiveValuePerGeneration[i+1][j] - objectiveValuePerGeneration[i][j]) / (objectiveValuePerGeneration[i][j] - objectiveValuePerGeneration[i - 1][j]);
+                                convergenceStep = (objectiveValuePerGeneration[i+1][j] - objectiveValuePerGeneration[i][j]) / denominator;
                             }
                             
                             convergence[j].push_back(convergenceStep);
@@ -883,23 +774,25 @@ namespace ioh {
                         std::cerr << "No data available" << std::endl;
                         return {};
                     }
-                    //Use objectiveValuePerGeneration
+                    
                     std::vector<double> convergence;
-                    double convergenceStep;
                     for (size_t i = 0; i < objectiveValuePerGeneration.size()-1; ++i) {
                         double convergenceStep = 0;
-                        //Use best individual in each generation
                         double max = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
                         double maxNext = *std::max_element(objectiveValuePerGeneration[i + 1].begin(), objectiveValuePerGeneration[i + 1].end());
-                        convergenceStep = (maxNext - max) / (max);
+                        
+                        double denominator = max;
+                        if (std::abs(denominator) < AVOID_ZERO) {
+                            denominator = AVOID_ZERO;
+                        }
+                        
+                        convergenceStep = (maxNext - max) / denominator;
                         convergence.push_back(convergenceStep);
                     }
                     return convergence;
                 }
 
                 std::vector<double> geometricRateofFitnessChangePerGeneration(int optimum, int n_firstGen, int n_children){
-                    //Se hace por raw_y_best por generacion
-                    //Y tambien se tiene que ahcer por individuo.
                     if (dataNames.empty()) {
                         std::cerr << "No data available" << std::endl;
                         return {};
@@ -913,49 +806,30 @@ namespace ioh {
                         for (size_t i = 1; i < data[genIndex].size() + 1; ++i) {
                             if(data[genIndex][i] != data[genIndex][i - 1]){
                                 double x = (optimum - data[index][i-1]) / (optimum - data[index][0]);
-                                geomChangeGen = 1 - pow(x, 1.0/data[genIndex][i-1]);
+                                
+                                double generation = data[genIndex][i-1];
+                                if (generation == 0) {
+                                    generation = AVOID_ZERO;
+                                }
+                                
+                                geomChangeGen = 1 - pow(x, 1.0/generation);
                                 geomFitnessChange.push_back(geomChangeGen);
                             }   
                         }
                         return geomFitnessChange;
                     } else {
                         std::cerr << "No data" << std::endl;
+                        return {};
                     }
                 }
 
-                /*double e_value(int optimum){ //Con cantidad de evaluaciones
-                    if (dataNames.empty()) {
-                        std::cerr << "No data available" << std::endl;
-                        return -1;
-                    }
-
-                    double desiredValue = optimum*0.90;
-                    double n_successful = 0;
-                    double n_sim = 0;
-                    for (size_t i = 0; i < objectiveValuePerGeneration.size(); ++i) {
-                            for (size_t j = 0; j < objectiveValuePerGeneration[i].size(); ++j) {
-                                if (objectiveValuePerGeneration[i][j] >= desiredValue) {
-                                    ++n_successful;
-                                }
-                                ++n_sim;
-                            } 
-                        }
-                    double n_quality = n_successful / n_sim;
-
-                    double n_convergence = static_cast<double>(data[0][data[0].size() - 1]) / (nCr(n_var, 2));
-
-                    double e_ = n_quality / n_convergence;
-                    return e_;
-                }*/
-
-                //Implementacion nueva
-                double calculate_n_quality(int optimum) {
+                double calculate_n_quality(int optimum, double qthr) {
                     if (dataNames.empty()) {
                         std::cerr << "No data available" << std::endl;
                         return -1;
                     }
                     
-                    double desiredValue = optimum * 0.90;
+                    double desiredValue = optimum * qthr;
                     double n_successful = 0;
                     double n_sim = 0;
                     for (size_t i = 0; i < objectiveValuePerGeneration.size(); ++i) {
@@ -966,6 +840,11 @@ namespace ioh {
                             ++n_sim;
                         } 
                     }
+                    
+                    if (n_sim == 0) {
+                        return 0.0;
+                    }
+                    
                     return n_successful / n_sim;
                 }
 
@@ -978,96 +857,83 @@ namespace ioh {
                         }
                     }
                     auto uniqueSolutions = getUniqueSolutions(xVectors);
-                    return static_cast<double>(uniqueSolutions.size()) / (nCr(n_var, 2));
+                    
+                    long long combinations = nCr(n_var, 2);
+                    if (combinations == 0) {
+                        combinations = 1;
+                    }
+                    
+                    return static_cast<double>(uniqueSolutions.size()) / combinations;
                 }
 
                 double e_value(int optimum) {
                     double n_quality = calculate_n_quality(optimum);
                     double n_convergence = calculate_n_convergence();
                     
+                    if (std::abs(n_convergence) < AVOID_ZERO) {
+                        n_convergence = AVOID_ZERO;
+                    }
+                    
                     return n_quality / n_convergence;
                 }
                 double e_value(double n_quality, double n_convergence) {
+                    if (std::abs(n_convergence) < AVOID_ZERO) {
+                        n_convergence = AVOID_ZERO;
+                    }
                     return n_quality / n_convergence;
                 }
 
-                //Subsection: Hamming
-                //Hamming distance between best solution in the first generation and the best solution in the current generation
-                std::vector<double> hammingDistanceBestSolutionPerGeneration(){
-                    std::vector<double> hammingDistances;
-                    for (size_t i = 1; i < xVectorsProcessed.size(); ++i) {
-                        size_t maxIndex = std::distance(objectiveValuePerGeneration[i].begin(), 
-                                        std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end()));
-                        hammingDistances.push_back(hammingDistance(xVectorsProcessed[0][0], xVectorsProcessed[i][maxIndex])/n_var);
-                    }
-                    return hammingDistances;
-                }
-
-                //Hamming distance between best solution in the current generation and the best solution in the previous generation
-                std::vector<double> hammingDistanceBestSolutionPerGeneration2(){
-                    std::vector<double> hammingDistances;
-                    for (size_t i = 1; i < xVectorsProcessed.size(); ++i) {
-                        size_t maxIndex = std::distance(objectiveValuePerGeneration[i].begin(), 
-                                        std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end()));
-                        size_t maxIndexPrevious = std::distance(objectiveValuePerGeneration[i - 1].begin(), 
-                                        std::max_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end()));
-                        hammingDistances.push_back(hammingDistance(xVectorsProcessed[i - 1][maxIndexPrevious], xVectorsProcessed[i][maxIndex])/n_var);
-                    }
-                    return hammingDistances;
-                }
-
-                //Hamming distance between best global solution and the best solution in the current generation
-                std::vector<double> hammingDistanceBestSolutionPerGeneration3(){
+                std::vector<double> hammingDistanceMain(HammingDistanceType type = HammingDistanceType::GLOBAL_BEST){
                     std::vector<double> hammingDistances;
                     std::vector<double> bestGlobalSolution;
-
-                    int index = getIndex(dataNames, "raw_y_best");
-                    //get the best in the first generation
-                    size_t maxIndex = std::distance(objectiveValuePerGeneration[0].begin(), 
-                                        std::max_element(objectiveValuePerGeneration[0].begin(), objectiveValuePerGeneration[0].end()));
-                    bestGlobalSolution = xVectorsProcessed[0][maxIndex];
-                    hammingDistances.push_back(0);
+                    
+                    if (type == HammingDistanceType::GLOBAL_BEST) {
+                        int index = getIndex(dataNames, "raw_y_best");
+                        size_t maxIndex = std::distance(objectiveValuePerGeneration[0].begin(), 
+                                            std::max_element(objectiveValuePerGeneration[0].begin(), objectiveValuePerGeneration[0].end()));
+                        bestGlobalSolution = xVectorsProcessed[0][maxIndex];
+                        hammingDistances.push_back(0);
+                    }
+                    
                     for (size_t i = 1; i < xVectorsProcessed.size(); ++i) {
                         size_t maxIndex = std::distance(objectiveValuePerGeneration[i].begin(), 
                                         std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end()));
-                        if (data[index][i*n_children] > data[index][i*n_children - 1]) {
-                            bestGlobalSolution = xVectorsProcessed[i][maxIndex];
+                        
+                        double distance = 0;
+                        switch(type) {
+                            case HammingDistanceType::FIRST_GEN_BEST:
+                                distance = hammingDistance(xVectorsProcessed[0][0], xVectorsProcessed[i][maxIndex])/n_var;
+                                break;
+                            case HammingDistanceType::PREVIOUS_GEN_BEST: {
+                                size_t maxIndexPrevious = std::distance(objectiveValuePerGeneration[i - 1].begin(), 
+                                                std::max_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end()));
+                                distance = hammingDistance(xVectorsProcessed[i - 1][maxIndexPrevious], xVectorsProcessed[i][maxIndex])/n_var;
+                                break;
+                            }
+                            case HammingDistanceType::GLOBAL_BEST: {
+                                int index = getIndex(dataNames, "raw_y_best");
+                                if (data[index][i*n_children] > data[index][i*n_children - 1]) {
+                                    bestGlobalSolution = xVectorsProcessed[i][maxIndex];
+                                }
+                                distance = hammingDistance(bestGlobalSolution, xVectorsProcessed[i][maxIndex])/n_var;
+                                break;
+                            }
                         }
-                        hammingDistances.push_back(hammingDistance(bestGlobalSolution, xVectorsProcessed[i][maxIndex])/n_var);
+                        hammingDistances.push_back(distance);
                     }
                     return hammingDistances;
                 }
 
-                std::vector<double> entropyDiversity(){
+                std::vector<double> entropyDiversity(int n_areas = 8){
                     SearchSpaceDivisionByGeneration();
                     double diversity = 0;
-                    double areaScores[8] = {0, 0, 0, 0, 0, 0, 0, 0};
                     std::vector<double> areaScoresVector;
-                    for (size_t i = 0; i < searchSpaceAreasByGenerations.size(); ++i) {
-                        diversity = 0;
-                        //reset areaScores
-                        for (size_t j = 0; j < 8; ++j) {
-                            areaScores[j] = 0;
-                        }
-                        for (size_t j = 0; j < searchSpaceAreasByGenerations[i].size(); ++j) {
-                            areaScores[searchSpaceAreasByGenerations[i][j]] += 1;
-                        }
-                        for (size_t j = 0; j < 8; ++j) {
-                            //std::cout << "Area " << j << " Score: " << areaScores[j] << std::endl;
-                            if (areaScores[j] != 0){
-                                diversity += (areaScores[j] / n_children) * log(areaScores[j] / n_children);
-                            }
-                        }
-                        areaScoresVector.push_back(-diversity);
+                    
+                    if (n_children == 0) {
+                        std::cerr << "No children available for entropy calculation" << std::endl;
+                        return areaScoresVector;
                     }
-                    return areaScoresVector;
-                }
-
-                //Incluir mdsCustomAreas
-                std::vector<double> entropyDiversityCustomAreas(int n_areas){
-                    SearchSpaceDivisionByGeneration();
-                    double diversity = 0;
-                    std::vector<double> areaScoresVector;
+                    
                     for (size_t i = 0; i < searchSpaceAreasByGenerations.size(); ++i) {
                         diversity = 0;
                         std::vector<double> areaScores(n_areas, 0);
@@ -1079,54 +945,106 @@ namespace ioh {
                                 diversity += (areaScores[j] / n_children) * log(areaScores[j] / n_children);
                             }
                         }
-                        areaScoresVector.push_back(-diversity);
+                        if (diversity == 0){
+                            areaScoresVector.push_back(0);
+                        }
+                        else{
+                            areaScoresVector.push_back(-diversity);
+                        }
                     }
                     return areaScoresVector;
                 }
 
-                std::vector<std::vector<double>> diversityDistanceToCenter(int R){ //Without best individual as center (0 as center)
-                    double distance = 0;
-                    std::vector<double> segments;
-                    std::vector<std::vector<double>> diversity;
-                    double rMax = std::sqrt(n_var); //Has to change in case of non binary variables
-                    for (int i = 0; i < R; ++i) {
-                        segments.push_back((i*rMax)/R);
+                std::vector<std::vector<double>> diversityDistanceToCenter(
+                    int R, 
+                    DiversityCenterType centerType = DiversityCenterType::ZERO_CENTER,
+                    const std::vector<double>& customCenter = std::vector<double>(),
+                    const std::vector<Domain>& variableRanges = std::vector<Domain>()
+                ) {
+                    if (R == 0) {
+                        std::cerr << "R cannot be zero for diversity calculation" << std::endl;
+                        return std::vector<std::vector<double>>();
                     }
-                    segments.push_back(rMax);
-                    for (size_t i = 0; i < xVectorsProcessed.size(); ++i) {
-                        diversity.push_back(std::vector<double>());
-                        for (size_t j = 0; j < xVectorsProcessed[i].size(); ++j) {
-                            //Use euclidean distance with x2 as 0
-                            distance = euclideanDistance(xVectorsProcessed[i][j], std::vector<double>(n_var, 0));
-                            for (int k = 0; k < R; ++k) {
-                                if (distance >= segments[k] && distance < segments[k + 1]) {
-                                    diversity[i].push_back(k);
-                                    break;
-                                }
-                            }
+                    
+                    if (centerType == DiversityCenterType::CUSTOM_CENTER) {
+                        if (variableRanges.size() != n_var) {
+                            std::cerr << "Variable ranges vector size must equal n_var" << std::endl;
+                            return std::vector<std::vector<double>>();
                         }
                     }
-                    return diversity;
-                }
-
-                std::vector<std::vector<double>> diversityDistanceToCenter2(int R){ //With best individual as center
+                    
                     double distance = 0;
                     std::vector<double> segments;
                     std::vector<std::vector<double>> diversity;
-                    double rMax = std::sqrt(n_var); //Has to change in case of non binary variables
+                    double rMax;
+                    
+                    if (centerType == DiversityCenterType::CUSTOM_CENTER) {
+                        double maxDistanceSquared = 0;
+                        for (size_t var = 0; var < n_var; ++var) {
+                            double minVal = variableRanges[var].min;
+                            double maxVal = variableRanges[var].max;
+                            double centerVal = customCenter[var];
+                            
+                            double distToMin = std::abs(centerVal - minVal);
+                            double distToMax = std::abs(centerVal - maxVal);
+                            double maxDistForVar = std::max(distToMin, distToMax);
+                            
+                            double range = maxVal - minVal;
+                            if (range > 0) {
+                                maxDistForVar /= range;
+                            }
+                            
+                            maxDistanceSquared += maxDistForVar * maxDistForVar;
+                        }
+                        rMax = std::sqrt(maxDistanceSquared);
+                    } else {
+                        rMax = std::sqrt(n_var);
+                    }
+                    
                     for (int i = 0; i < R; ++i) {
-                        segments.push_back((i*rMax)/R); //Recalculate on every iteration
+                        segments.push_back((i * rMax) / R);
                     }
                     segments.push_back(rMax);
+                    
                     for (size_t i = 0; i < xVectorsProcessed.size(); ++i) {
                         diversity.push_back(std::vector<double>());
-                        //Use euclidean distance with x2 as best individual in the generation
-                        auto maxIt = std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
-                        size_t maxIndex = std::distance(objectiveValuePerGeneration[i].begin(), maxIt);
+                        
+                        std::vector<double> centerVector;
+                        if (centerType == DiversityCenterType::ZERO_CENTER) {
+                            centerVector = std::vector<double>(n_var, 0);
+                        } else if (centerType == DiversityCenterType::CUSTOM_CENTER) {
+                            centerVector = customCenter;
+                        } else {
+                            auto maxIt = std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
+                            size_t maxIndex = std::distance(objectiveValuePerGeneration[i].begin(), maxIt);
+                            centerVector = xVectorsProcessed[i][maxIndex];
+                        }
+                        
                         for (size_t j = 0; j < xVectorsProcessed[i].size(); ++j) {
-                            distance = euclideanDistance(xVectorsProcessed[i][j], xVectorsProcessed[i][maxIndex]);
-                            for (int k = 0; k < R; ++k) {
+                            if (centerType == DiversityCenterType::CUSTOM_CENTER) {
+                                std::vector<double> normalizedIndividual(n_var);
+                                std::vector<double> normalizedCenter(n_var);
                                 
+                                for (size_t var = 0; var < n_var; ++var) {
+                                    double minVal = variableRanges[var].min;
+                                    double maxVal = variableRanges[var].max;
+                                    double range = maxVal - minVal;
+                                    
+                                    if (range > 0) {
+                                        normalizedIndividual[var] = (xVectorsProcessed[i][j][var] - minVal) / range;
+                                        normalizedCenter[var] = (centerVector[var] - minVal) / range;
+                                    } else {
+                                        normalizedIndividual[var] = 0;
+                                        normalizedCenter[var] = 0;
+                                    }
+                                }
+                                
+                                distance = euclideanDistance(normalizedIndividual, normalizedCenter);
+                            } else {
+                                distance = euclideanDistance(xVectorsProcessed[i][j], centerVector);
+                            }
+                            
+                            for (int k = 0; k < R; ++k) {
                                 if (distance >= segments[k] && distance < segments[k + 1]) {
                                     diversity[i].push_back(k);
                                     break;
@@ -1143,13 +1061,11 @@ namespace ioh {
                     double max, previousMax;
                     accumSumVector.push_back(0);
                     for (size_t i = 0; i < objectiveValuePerGeneration.size(); ++i) {
-                        //Use best individual in each generation
                         if (maxProblem)
                             max = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
                         else
                             max = *std::min_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
-                        //If max is better than previous max, add 1 to sum and push sum to accumSumVector
-                        //Else, add -1 to sum and push sum to accumSumVector
+                        
                         if (i == 0) {
                             previousMax = max;
                         } else {
@@ -1181,35 +1097,7 @@ namespace ioh {
                     return accumSumVector;
                 }
 
-                /*
-                void PSODiversity(){
-                    //D_swarmCenter = 1/|S| * sum_{i=1}^|S| (sqrt(sum_{j=1}^D (x_ij - x_j)^2)) with x_j the j-th component of the swarm center -> Swarm center is the average of the swarm
-                    D = n_var; //Problem dimension
-                    S_ = n_children; //Swarm size
-                    int genIndex = getIndex(dataNames, "generation");
-                    int index = getIndex(dataNames, "x0");
-                    std::vector<std::vector<double>> swarmCenter;
-                    for (size_t i = 0; i < data[genIndex].size(); ++i) {
-                        if (data[genIndex][i] == 0) {
-                            swarmCenter.push_back(std::vector<double>());
-                            for (int j = 0; j < n_var; ++j) {
-                                swarmCenter[0].push_back(data[index + j][i]);
-                            }
-                        } else {
-                            for (int j = 0; j < n_var; ++j) {
-                                swarmCenter[data[genIndex][i]].push_back(data[index + j][i]);
-                            }
-                        }
-                    }
-                }*/
-            //Seccion 3: Efectividad
-            //Seleccionar -> Quiza profiles of measure
-            //Para estas, las utiles usan mas de una run del algoritmo, consultar si haremos eso.
-            //Seccion 4: Operadores
-                //Metrica sobre rate de success por operador
-                //Metricas sobre rate de mejora por operador 
-
-                std::tuple<double,double> rateOfModificationsPerOperator(){ //Success = Change in objective value != better objective value
+                std::tuple<double,double> rateOfModificationsPerOperator(){
                     double rateOfModificationsMutations = 0;
                     double rateOfModificationsCrossovers = 0;
 
@@ -1218,8 +1106,17 @@ namespace ioh {
                     int successfulMutations = data[getIndex(dataNames, "successfulMutations")][data[getIndex(dataNames, "successfulMutations")].size() - 1];
                     int successfulCrossovers = data[getIndex(dataNames, "successfulCrossovers")][data[getIndex(dataNames, "successfulCrossovers")].size() - 1];
 
-                    rateOfModificationsMutations = (double) successfulMutations / totalMutations;
-                    rateOfModificationsCrossovers = (double) successfulCrossovers / totalCrossovers;
+                    if (totalMutations == 0) {
+                        rateOfModificationsMutations = 0.0;
+                    } else {
+                        rateOfModificationsMutations = (double) successfulMutations / totalMutations;
+                    }
+                    
+                    if (totalCrossovers == 0) {
+                        rateOfModificationsCrossovers = 0.0;
+                    } else {
+                        rateOfModificationsCrossovers = (double) successfulCrossovers / totalCrossovers;
+                    }
 
                     return std::make_tuple(rateOfModificationsMutations, rateOfModificationsCrossovers);
                 }
@@ -1228,6 +1125,11 @@ namespace ioh {
                     double rateOfModificationsCrossovers = 0;
                     int totalCrossovers = data[getIndex(dataNames, "totalCrossovers")][data[getIndex(dataNames, "totalCrossovers")].size() - 1];
                     int successfulCrossovers = data[getIndex(dataNames, "successfulCrossovers")][data[getIndex(dataNames, "successfulCrossovers")].size() - 1];
+                    
+                    if (totalCrossovers == 0) {
+                        return 0.0;
+                    }
+                    
                     rateOfModificationsCrossovers = (double) successfulCrossovers / totalCrossovers;
                     return rateOfModificationsCrossovers;
                 }
@@ -1236,6 +1138,11 @@ namespace ioh {
                     double rateOfModificationsMutations = 0;
                     int totalMutations = data[getIndex(dataNames, "totalMutations")][data[getIndex(dataNames, "totalMutations")].size() - 1];
                     int successfulMutations = data[getIndex(dataNames, "successfulMutations")][data[getIndex(dataNames, "successfulMutations")].size() - 1];
+                    
+                    if (totalMutations == 0) {
+                        return 0.0;
+                    }
+                    
                     rateOfModificationsMutations = (double) successfulMutations / totalMutations;
                     return rateOfModificationsMutations;
                 }
@@ -1244,6 +1151,11 @@ namespace ioh {
                     double rateOfSuccessCrossovers = 0;
                     int totalCrossovers = data[getIndex(dataNames, "totalCrossovers")][data[getIndex(dataNames, "totalCrossovers")].size() - 1];
                     int successfulCrossovers = data[getIndex(dataNames, "successfulCrossovers")][data[getIndex(dataNames, "successfulCrossovers")].size() - 1];
+                    
+                    if (totalCrossovers == 0) {
+                        return 0.0;
+                    }
+                    
                     rateOfSuccessCrossovers = (double) successfulCrossovers / totalCrossovers;
                     return rateOfSuccessCrossovers;
                 }
@@ -1252,6 +1164,11 @@ namespace ioh {
                     double rateOfSuccessMutations = 0;
                     int totalMutations = data[getIndex(dataNames, "totalMutations")][data[getIndex(dataNames, "totalMutations")].size() - 1];
                     int successfulMutations = data[getIndex(dataNames, "successfulMutations")][data[getIndex(dataNames, "successfulMutations")].size() - 1];
+                    
+                    if (totalMutations == 0) {
+                        return 0.0;
+                    }
+                    
                     rateOfSuccessMutations = (double) successfulMutations / totalMutations;
                     return rateOfSuccessMutations;
                 }
@@ -1259,8 +1176,13 @@ namespace ioh {
                 double rateOfFailureCrossovers(){
                     double rateOfFailureCrossovers = 0;
                     int totalCrossovers = data[getIndex(dataNames, "totalCrossovers")][data[getIndex(dataNames, "totalCrossovers")].size() - 1];
-                    int successfulCrossovers = data[getIndex(dataNames, "successfulCrossovers")][data[getIndex(dataNames, "failedCrosuccessfulCrossoversssovers")].size() - 1];
-                    rateOfFailureCrossovers =   1 - (double) successfulCrossovers / totalCrossovers;
+                    int successfulCrossovers = data[getIndex(dataNames, "successfulCrossovers")][data[getIndex(dataNames, "successfulCrossovers")].size() - 1];
+                    
+                    if (totalCrossovers == 0) {
+                        return 0.0;
+                    }
+                    
+                    rateOfFailureCrossovers = 1 - (double) successfulCrossovers / totalCrossovers;
                     return rateOfFailureCrossovers;
                 }
 
@@ -1268,13 +1190,18 @@ namespace ioh {
                     double rateOfFailureMutations = 0;
                     int totalMutations = data[getIndex(dataNames, "totalMutations")][data[getIndex(dataNames, "totalMutations")].size() - 1];
                     int successfulMutations = data[getIndex(dataNames, "successfulMutations")][data[getIndex(dataNames, "successfulMutations")].size() - 1];
+                    
+                    if (totalMutations == 0) {
+                        return 0.0;
+                    }
+                    
                     rateOfFailureMutations = 1 - (double) successfulMutations / totalMutations;
                     return rateOfFailureMutations;
                 }
 
                 void rateOfImprovementPerOperator(){
-                    std::vector<std::vector<double>> mutationImprovement; //Generations -> improvement, agent is the position in the vector
-                    std::vector<std::vector<double>> crossoverImprovement; //Generations -> improvement, agent is the position in the vector
+                    std::vector<std::vector<double>> mutationImprovement;
+                    std::vector<std::vector<double>> crossoverImprovement;
                     
                     int successfulMutationsIndex = getIndex(dataNames, "successfulMutations");
                     int successfulCrossoversIndex = getIndex(dataNames, "successfulCrossovers");
@@ -1282,13 +1209,11 @@ namespace ioh {
                     int index = getIndex(dataNames, "raw_y");
                     int counter = 0;
 
-                    //FirstGen
                     mutationImprovement.push_back(std::vector<double>());
                     for (int i = 0; i < n_firstGen; ++i) {
                         mutationImprovement[0].push_back(0);
                     }
 
-                    //Rest of generations
                     for (size_t i = 1; i <= data[genIndex][data[genIndex].size() - 1]; ++i) {
                         mutationImprovement.push_back(std::vector<double>());
                         for (int j = 0; j < n_children; ++j) {
@@ -1309,13 +1234,10 @@ namespace ioh {
                         }
                     }
 
-                    //same for crossovers
-                    //FirstGen
                     crossoverImprovement.push_back(std::vector<double>());
                     for (int i = 0; i < n_firstGen; ++i) {
                         crossoverImprovement[0].push_back(0);
                     }
-                    //Rest of generations
                     for (size_t i = 1; i <= data[genIndex][data[genIndex].size() - 1]; ++i) {
                         crossoverImprovement.push_back(std::vector<double>());
                         for (int j = 0; j < n_children; ++j) {
@@ -1371,27 +1293,42 @@ namespace ioh {
                         }
                     }
 
-                    meanImprovementMutations /= counterImprovementMutations;
-                    meanImprovementCrossovers /= counterImprovementCrossovers;
+                    if (counterImprovementMutations == 0) {
+                        meanImprovementMutations = 0.0;
+                    } else {
+                        meanImprovementMutations /= counterImprovementMutations;
+                    }
+                    
+                    if (counterImprovementCrossovers == 0) {
+                        meanImprovementCrossovers = 0.0;
+                    } else {
+                        meanImprovementCrossovers /= counterImprovementCrossovers;
+                    }
 
-                    meanDeteriorationMutations /= counterDeteriorationMutations;
-                    meanDeteriorationCrossovers /= counterDeteriorationCrossovers;
+                    if (counterDeteriorationMutations == 0) {
+                        meanDeteriorationMutations = 0.0;
+                    } else {
+                        meanDeteriorationMutations /= counterDeteriorationMutations;
+                    }
+                    
+                    if (counterDeteriorationCrossovers == 0) {
+                        meanDeteriorationCrossovers = 0.0;
+                    } else {
+                        meanDeteriorationCrossovers /= counterDeteriorationCrossovers;
+                    }
                 }
 
                 std::tuple<double,double> rateOfImprovementMutations(){
-                    //Generations -> improvement, agent is the position in the vector
                     int successfulMutationsIndex = getIndex(dataNames, "successfulMutations");
                     int genIndex = getIndex(dataNames, "generation");
                     int index = getIndex(dataNames, "raw_y");
                     int counter = 0;
 
-                    //FirstGen
                     mutationImprovement.push_back(std::vector<double>());
                     for (int i = 0; i < n_firstGen; ++i) {
                         mutationImprovement[0].push_back(0);
                     }
 
-                    //Rest of generations
                     for (size_t i = 1; i <= data[genIndex][data[genIndex].size() - 1]; ++i) {
                         mutationImprovement.push_back(std::vector<double>());
                         for (int j = 0; j < n_children; ++j) {
@@ -1430,26 +1367,32 @@ namespace ioh {
                         }
                     }
 
-                    meanImprovementMutations /= counterImprovementMutations;
-                    meanDeteriorationMutations /= counterDeteriorationMutations;
+                    if (counterImprovementMutations == 0) {
+                        meanImprovementMutations = 0.0;
+                    } else {
+                        meanImprovementMutations /= counterImprovementMutations;
+                    }
+                    
+                    if (counterDeteriorationMutations == 0) {
+                        meanDeteriorationMutations = 0.0;
+                    } else {
+                        meanDeteriorationMutations /= counterDeteriorationMutations;
+                    }
 
                     return std::make_tuple(meanImprovementMutations, meanDeteriorationMutations);
                 }
 
                 std::tuple<double,double> rateOfImprovementCrossovers(){
-                    //Generations -> improvement, agent is the position in the vector
                     int successfulCrossoversIndex = getIndex(dataNames, "successfulCrossovers");
                     int genIndex = getIndex(dataNames, "generation");
                     int index = getIndex(dataNames, "raw_y");
                     int counter = 0;
 
-                    //FirstGen
                     crossoverImprovement.push_back(std::vector<double>());
                     for (int i = 0; i < n_firstGen; ++i) {
                         crossoverImprovement[0].push_back(0);
                     }
 
-                    //Rest of generations
                     for (size_t i = 1; i <= data[genIndex][data[genIndex].size() - 1]; ++i) {
                         crossoverImprovement.push_back(std::vector<double>());
                         for (int j = 0; j < n_children; ++j) {
@@ -1488,8 +1431,17 @@ namespace ioh {
                         }
                     }
 
-                    meanImprovementCrossovers /= counterImprovementCrossovers;
-                    meanDeteriorationCrossovers /= counterDeteriorationCrossovers;
+                    if (counterImprovementCrossovers == 0) {
+                        meanImprovementCrossovers = 0.0;
+                    } else {
+                        meanImprovementCrossovers /= counterImprovementCrossovers;
+                    }
+                    
+                    if (counterDeteriorationCrossovers == 0) {
+                        meanDeteriorationCrossovers = 0.0;
+                    } else {
+                        meanDeteriorationCrossovers /= counterDeteriorationCrossovers;
+                    }
 
                     return std::make_tuple(meanImprovementCrossovers, meanDeteriorationCrossovers);
                 }
