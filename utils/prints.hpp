@@ -38,6 +38,22 @@ void output_file_vector(std::string filePath, std::string fileName, std::vector<
     file.close();
 }
 
+void output_file_matrix(std::string filePath, std::string fileName, std::vector<std::vector<double>> m) {
+    std::filesystem::create_directories(filePath); 
+    std::ofstream file(filePath + fileName + ".txt");
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file " << filePath + fileName + ".txt" << std::endl;
+        return;
+    }
+    for (int i = 0; i < m.size(); i++) {
+        for (int j = 0; j < m[i].size(); j++) {
+            file << m[i][j] << " ";
+        }
+        file << std::endl;
+    }
+    file.close();
+}
+
 void print_double(string var, double v, std::ofstream* file = nullptr) {
     if(file != nullptr){
         (*file) << var << ": " << v << std::endl;

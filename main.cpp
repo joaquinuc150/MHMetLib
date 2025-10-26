@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <chrono>
+#include <cctype>
 
 namespace fs = std::filesystem;
 
@@ -462,16 +463,33 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer metricsAnalyzer, int n_fir
     summary_file.close();
 }
 
+std::string trim(const std::string& str) {
+    auto start = str.begin();
+    while (start != str.end() && std::isspace(*start)) {
+        start++;
+    }
+    
+    auto end = str.end();
+    do {
+        end--;
+    } while (end > start && std::isspace(*end));
+    
+    return std::string(start, end + 1);
+}
+
 std::map<std::string, std::string> readConfig(const std::string& filename) {
     std::map<std::string, std::string> config;
     std::ifstream file(filename);
     std::string line;
+    
     while (std::getline(file, line)) {
         if(line.empty() || line[0] == '#') continue;
+        
         std::istringstream ss(line);
         std::string key, value;
+        
         if (std::getline(ss, key, '=') && std::getline(ss, value)) {
-            config[key] = value;
+            config[trim(key)] = trim(value);  // Aplica trim a ambos
         }
     }
     return config;
@@ -505,9 +523,10 @@ std::vector<Domain> generarDominios(const std::string& archivo, int numVars) {
 }
 
 int main(int argc, char **argv) {
-    std::string typeOfAnalyzer = "";
     std::string route = "";
-    if (argc == 9) {
+    auto config = readConfig("config.cnf");
+    std::string typeOfAnalyzer = config["typeOfAnalyzer"];
+    if (typeOfAnalyzer == "populationBased"){ 
         std::string problemFile = argv[1];
         int optimum = std::stoi(argv[2]);
         int n_var = std::stoi(argv[3]);
@@ -537,23 +556,27 @@ int main(int argc, char **argv) {
         typeOfAnalyzer = "populationBased";
     }
     else {
-        auto config = readConfig("config.cnf");
         std::string path = config["path"];
-        int n = std::stoi(config["n"]);
-        int entropySize = std::stoi(config["entropySize"]);
-        int hammingDistanceVariant = std::stoi(config["hammingDistanceVariant"]);
+        int n = std::stoi(config["n_var"]);
+        int hammingDistanceVariant = std::stoi(config["hd_variant"]);
+        HammingDistanceVariantEnum hammingDistanceVariantEnum = static_cast<HammingDistanceVariantEnum>(hammingDistanceVariant);
+        int distanceToCenterVariant = std::stoi(config["distance_variant"]);
+        DistanceToCenterVariantEnum distanceToCenterVariantEnum = static_cast<DistanceToCenterVariantEnum>(distanceToCenterVariant);
         bool maxProblem = (config["maxProblem"] == "true");
-        std::string typeOfAnalyzer = config["typeOfAnalyzer"];
         bool customDomain = (config["customDomain"] == "true");
+        int R = std::stoi(config["R"]);
+        int entropySize = std::stoi(config["entropy_zones"]);
+        double qthr = std::stod(config["qthr"]);
 
+        std::vector<Domain> domains = {};
         if (customDomain) {
             std::string domainFile = config["domainFile"];
-            std::vector<Domain> domains = generarDominios(domainFile, n);
+            domains = generarDominios(domainFile, n);
         }
 
         route = path + "/";
 
-        outputMetrics(path, n, entropySize, hammingDistanceVariant, maxProblem);
+        outputMetrics(path, n, R, qthr, entropySize, domains, hammingDistanceVariantEnum, maxProblem);
     }
 
     /*std::cout << "Plotting data" << std::endl;

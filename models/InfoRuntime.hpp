@@ -55,6 +55,13 @@ class RuntimeInfo {
             f_best = 0;
         }
 
+        RuntimeInfo(bool maximize, std::vector<Domain> domains, double threshold) : maximize(maximize), domains(domains), threshold(threshold) {
+            fevals = {};
+            time = {};
+            x = {};
+            f_best = 0;
+        }
+
         RuntimeInfo(std::vector<double> fevals, std::vector<std::vector<double>> x, double f_best)
             : fevals(fevals), x(x), f_best(f_best) {}
 
@@ -125,6 +132,14 @@ class RuntimeInfo {
             return intensify_vector;
         }
 
+        bool isEqualsSolutions(std::vector<double> a, std::vector<double> b) {
+            if (a.size() != b.size()) return false;
+            for (int i = 0; i < a.size(); i++) {
+                if (a[i] != b[i]) return false;
+            }
+            return true;
+        }
+
         std::vector<double> getImprovement() {
             std::vector<double> improvement_vector;
             for (int i = 1; i < fevals.size(); i++) {
@@ -137,12 +152,52 @@ class RuntimeInfo {
             return improvement_vector;
         }
 
-        std::vector<double> getSumativeIntensify() {
-            std::vector<double> sumative_intensify;
+        std::vector<double> getWorsening() {
+            std::vector<double> worsening_vector;
+            for (int i = 1; i < fevals.size(); i++) {
+                if(maximize && fevals[i] < fevals[i-1]) {
+                    worsening_vector.push_back(fevals[i-1] - fevals[i]);
+                } else if (!maximize && fevals[i] > fevals[i-1]) {
+                    worsening_vector.push_back(fevals[i] - fevals[i-1]);
+                }
+            }
+            return worsening_vector;
+        }
+
+        std::vector<double> getNoChange() {
+            std::vector<double> no_change_vector;
+            for (int i = 1; i < fevals.size(); i++) {
+                if(fevals[i] == fevals[i-1] && isEqualsSolutions(x[i], x[i-1])) {
+                    no_change_vector.push_back(0.0);
+                }
+            }
+            return no_change_vector;
+        }
+
+        std::vector<double> getOperatorRate() {
+            size_t attempts = fevals.size() - 1;
+            size_t improvementAttempts = getImprovement().size();
+            size_t worseningAttempts = getWorsening().size();
+            size_t noChangeAttempts = getNoChange().size();
+
+            std::vector<double> operator_rate_vector;
+            operator_rate_vector.push_back((double) (attempts - noChangeAttempts) / attempts);
+            operator_rate_vector.push_back((double) improvementAttempts / attempts);
+            operator_rate_vector.push_back((double) worseningAttempts / attempts);
+
+            return operator_rate_vector;
+        }
+
+        std::vector<std::vector<double>> getSumativeIntensify() {
+            std::vector<std::vector<double>> sumative_intensify;
             double sum = 0;
             for (int i = 0; i < intensify_vector.size(); i++) {
-                sum += intensify_vector[i] ? 1 : -1;
-                sumative_intensify.push_back(sum);
+                std::vector<double> temp;
+                double val = intensify_vector[i] ? 1 : -1;
+                temp.push_back(val);
+                sum += val;
+                temp.push_back(sum);
+                sumative_intensify.push_back(temp);
             }
             return sumative_intensify;
         }
@@ -171,11 +226,17 @@ class RuntimeInfo {
             return entropy_vector;
         }
 
-        // Calcula los radios de las esferas
-        std::vector<double> getSpheresAreas(int n, const std::vector<std::vector<double>>& x) {
+        std::vector<double> getSpheresAreas(int n) {
             std::vector<double> spheres_areas;
-            double max_area = sqrt(x[0].size()); // esto depende de tu definición de "radio máximo"
-            double min_area = 0;
+
+            double max_area = 0.0;
+            for (const auto& d : domains) {
+                double range = d.max - d.min;
+                max_area += range * range;
+            }
+            max_area = sqrt(max_area);
+
+            double min_area = 0.0;
 
             for (int i = 1; i <= n; i++) {
                 spheres_areas.push_back(min_area + i * (max_area - min_area) / n);
@@ -184,22 +245,28 @@ class RuntimeInfo {
             return spheres_areas;
         }
 
-        // Calcula en qué esfera cae cada punto, pero respecto a un centro arbitrario p
         std::vector<double> getSpheresAreasForIteration(
             int n,
-            const std::vector<std::vector<double>>& x,
-            const std::vector<double>& p
+            std::vector<double>& p
         ) {
             n = n == -1 ? x[0].size() : n;
-            std::vector<double> spheres_areas = getSpheresAreas(n, x);
+            p = p.empty() ? x[0] : p;
+            std::vector<double> spheres_areas = getSpheresAreas(n);
             std::vector<double> spheres_areas_for_iteration;
 
             for (int i = 0; i < x.size(); i++) {
-                double distance = 0;
+                double distance = 0.0;
                 for (int j = 0; j < x[i].size(); j++) {
-                    double diff = x[i][j] - p[j]; // resta respecto al centro
+                    double range = domains[j].max - domains[j].min;
+                    if (range == 0) range = 1;
+
+                    double x_norm = (x[i][j] - domains[j].min) / range;
+                    double p_norm = (p[j] - domains[j].min) / range;
+
+                    double diff = x_norm - p_norm;
                     distance += diff * diff;
                 }
+
                 distance = sqrt(distance);
 
                 for (int j = 0; j < spheres_areas.size(); j++) {
@@ -209,8 +276,10 @@ class RuntimeInfo {
                     }
                 }
             }
+
             return spheres_areas_for_iteration;
         }
+
 
         std::vector<double> getConvRate(){
             std::vector<double> conv_rate_vector;
@@ -331,8 +400,8 @@ class RuntimeInfo {
             return (double) success / fevals.size();
         }
 
-        long long nConvergence() {
-            return x.size() / nCr(x[0].size(), 2);
+        double nConvergence() {
+            return (double) x.size() / nCr(x[0].size(), 2);
         }
 
         double getEValue() {

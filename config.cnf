@@ -1,0 +1,45 @@
+#Archivo de configuración
+
+# Tipo de algoritmo
+typeOfAnalyzer = trayectoryBased
+
+# Archivo del problema (instancia o dataset)
+path = ./testdata.dat
+
+# Valor óptimo conocido del problema (si aplica)
+optimum = 100
+
+# Número de variables o dimensiones del problema
+n_var = 100
+
+# Tamaño de la población
+mu = 50
+
+# Maximizar/minimizar
+maxProblem = true
+
+# Nombre del problema (usado para construir la ruta)
+problem_name = nreinas
+
+# Variante del Hamming Distance
+hd_variant = 0
+# Recordatorio: 0 (current vs sol inicial), 1 (it consecutivas), 2 (current y current best).
+
+# Umbral de calidad (quality threshold)
+qthr = 85
+
+# Variante de DistanceToCenter
+distance_variant = 0
+# 0: custom - zero. 1: center del dominio
+
+# Segmentos en DistanceToCenter
+R = 50
+
+# Número de zonas de entropía para el análisis de EntropyDiversity
+entropy_zones = 4
+
+# Custom domain
+customDomain = true
+
+# Custom domain file
+domainFile = ./domains.txt

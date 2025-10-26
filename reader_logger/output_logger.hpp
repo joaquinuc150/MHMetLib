@@ -5,22 +5,24 @@
 #include <chrono>
 
 enum HammingDistanceVariantEnum { FromZero, BetweenSolutions, FromLocalBest };
+enum DistanceToCenterVariantEnum { EmptySolution, BestSolution, Custom };
 
-void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size_t n, int entropySize, HammingDistanceVariantEnum hdVariant, bool maxProblem) {
+void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size_t n, int R, int entropySize, HammingDistanceVariantEnum hdVariant, bool maxProblem) {
+    std::vector<double> p = {};
     for (int i = 0; i < data.size(); i++) {
         std::string filePathOutput = filePath + "_Run_" + std::to_string(i + 1) + "/";
 
         std::cerr << "Writing to Run " + std::to_string(i + 1) << std::endl;
 
         auto start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "Fevals", data[i].getFevals());
+        output_file_vector(filePathOutput, "ConvGraph_T", data[i].getFevals());
         auto end = std::chrono::high_resolution_clock::now();
-        std::cout << "Fevals: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "ConvGraph_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "FevalsBest", data[i].getFevalsBest());
+        output_file_vector(filePathOutput, "CurrentB_T", data[i].getFevalsBest());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "FevalsBest: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "CurrentB_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
         data[i].moveDomainFevals();
@@ -33,19 +35,24 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         std::cout << "getfBest: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        data[i].calculateIntensify(maxProblem);
+        data[i].calculateIntensify();
         end = std::chrono::high_resolution_clock::now();
         std::cout << "calculateIntensify: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "SumativeIntensify", data[i].getSumativeIntensify());
+        output_file_matrix(filePathOutput, "ASID_T", data[i].getSumativeIntensify());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "SumativeIntensify: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "ASID_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "AccumulatedIntensify", data[i].getAccumulatedIntensify());
+        output_file_vector(filePathOutput, "AccumulatedIntensify_T", data[i].getAccumulatedIntensify());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "AccumulatedIntensify: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "AccumulatedIntensify_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        output_file_vector(filePathOutput, "OperatorRate_T", data[i].getOperatorRate());
+        end = std::chrono::high_resolution_clock::now();
+        std::cout << "OperatorRate_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
         output_file_vector(filePathOutput, "EntropyWithSphere", data[i].getEntropyWithSphere());
@@ -53,7 +60,7 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         std::cout << "EntropyWithSphere: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "SpheresAreas", data[i].getSpheresAreasForIteration(n));
+        output_file_vector(filePathOutput, "SpheresAreas", data[i].getSpheresAreasForIteration(R, p));
         end = std::chrono::high_resolution_clock::now();
         std::cout << "SpheresAreas: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
@@ -63,49 +70,54 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         std::cout << "ConvRate: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "ConvRateOpt", data[i].getConvRateOpt());
+        output_file_vector(filePathOutput, "ConvRate_T", data[i].getConvRateOpt());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "ConvRateOpt: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "ConvRate_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "Improvement", data[i].getImprovement());
+        output_file_vector(filePathOutput, "DistImp_T", data[i].getImprovement());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "Improvement: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "DistImp_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "ErrorRate", data[i].getErrorRate());
+        output_file_vector(filePathOutput, "DistDet_T", data[i].getWorsening());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "ErrorRate: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "DistDet_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "GeomRate", data[i].getGeomRate());
+        output_file_vector(filePathOutput, "RelError_T", data[i].getErrorRate());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "GeomRate: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "RelError_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "VectorDiversity", data[i].getVectorDiversity(5));
+        output_file_vector(filePathOutput, "GeoConvRate_T", data[i].getGeomRate());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "VectorDiversity: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "GeoConvRate_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        output_file_vector(filePathOutput, "VectorDiversity_T", data[i].getVectorDiversity(5));
+        end = std::chrono::high_resolution_clock::now();
+        std::cout << "VectorDiversity_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         switch (hdVariant)
         {
             case HammingDistanceVariantEnum::FromZero:
                 start = std::chrono::high_resolution_clock::now();
-                output_file_vector(filePathOutput, "DistanceHammingfromZero", data[i].getDistanceHammingFromZero());
+                output_file_vector(filePathOutput, "HamDist_T", data[i].getDistanceHammingFromZero());
                 end = std::chrono::high_resolution_clock::now();
-                std::cout << "DistanceHammingfromZero: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+                std::cout << "HamDist_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
                 break;
             case HammingDistanceVariantEnum::BetweenSolutions:
                 start = std::chrono::high_resolution_clock::now();
-                output_file_vector(filePathOutput, "DistanceHamming", data[i].getDistanceHamming());
+                output_file_vector(filePathOutput, "HamDist_T", data[i].getDistanceHamming());
                 end = std::chrono::high_resolution_clock::now();
-                std::cout << "DistanceHamming: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+                std::cout << "HamDist_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
                 break;
             case HammingDistanceVariantEnum::FromLocalBest:
                 start = std::chrono::high_resolution_clock::now();
-                output_file_vector(filePathOutput, "DistanceHammingFromLocalBest", data[i].getDistanceHammingFromLocalBest());
+                output_file_vector(filePathOutput, "HamDist_T", data[i].getDistanceHammingFromLocalBest());
                 end = std::chrono::high_resolution_clock::now();
-                std::cout << "DistanceHammingFromLocalBest: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+                std::cout << "HamDist_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
                 break;
         }
 
@@ -117,7 +129,7 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         end = std::chrono::high_resolution_clock::now();
         std::cout << "nQuality, nConvergence, eValue: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
         vector<double> eValueVector = {n_quality, n_convergence, eValue};
-        output_file_vector(filePathOutput, "e_value", eValueVector);
+        output_file_vector(filePathOutput, "EValue_T", eValueVector);
 
         start = std::chrono::high_resolution_clock::now();
         data[i].createXMatrixPerEvaluation();
@@ -140,21 +152,21 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         std::cout << "MDSSearchSpaceDivisionCustomSectors: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "EntropyDiversity", data[i].entropyDiversityCustomAreas(entropySize));
+        output_file_vector(filePathOutput, "EntropyDiv_T", data[i].entropyDiversityCustomAreas(entropySize));
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "EntropyDiversity: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "EntropyDiv_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
     }
 }
 
-void outputMetrics(std::string path, int n, int entropySize, std::vector<Domain> domains = std::vector<Domain>(), HammingDistanceVariantEnum hdVariant = HammingDistanceVariantEnum::FromZero, bool maxProblem = true) {
+void outputMetrics(std::string path, int n, int R, double threshold, int entropySize, std::vector<Domain> domains = std::vector<Domain>(), HammingDistanceVariantEnum hdVariant = HammingDistanceVariantEnum::FromZero, bool maxProblem = true) {
     std::cerr << "Reading logger data from " << path << std::endl;
     std::string fileName = path.substr(0, path.find_first_of("/")) + "-" + path.substr(path.find_last_of("/") + 1, path.find_last_of(".") - path.find_last_of("/") - 1);
 
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<RuntimeInfo> data = readLogger(path, maximaze, domains);
+    std::vector<RuntimeInfo> data = readLogger(path, maxProblem, domains, threshold);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "readLogger: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
     std::cerr << "Creating file output with base name " << fileName << std::endl;
-    createFileOutput(fileName, data, n, entropySize);
+    createFileOutput(fileName, data, n, R, entropySize, hdVariant, maxProblem);
 }
