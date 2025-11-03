@@ -577,11 +577,12 @@ int main(int argc, char **argv) {
         route = path + "/";
 
         outputMetrics(path, n, R, qthr, entropySize, domains, hammingDistanceVariantEnum, maxProblem);
+        typeOfAnalyzer = "trayectorialBased";
     }
 
-    /*std::cout << "Plotting data" << std::endl;
+    std::cout << "Plotting data" << std::endl;
     std::cout << "python3 plotData.py " + route + " " + typeOfAnalyzer << std::endl;
     system(("python3 plotData.py " + route + " " + typeOfAnalyzer).c_str());
-    */
+
     return 0;
 }
