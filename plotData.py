@@ -335,48 +335,48 @@ def mainTrayectorial(input_dir):
         print(f"Error creating output directory: {e}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'Fevals.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'ConvGraph_T.txt'))
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Fevals')
-        plt.savefig(os.path.join(output_dir, 'Fevals.png'))
+        plt.savefig(os.path.join(output_dir, 'ConvGraph_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'Fevals.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'ConvGraph_T.txt')}")
     
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'FevalsBest.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'CurrentB_T.txt'))
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Fevals Best')
-        plt.savefig(os.path.join(output_dir, 'FevalsBest.png'))
+        plt.savefig(os.path.join(output_dir, 'CurrentB_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'FevalsBest.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'CurrentB_T.txt')}")
     
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'SumativeIntensify.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'ASID_T.txt'))
+        plt.plot(np.arange(1, data.shape[0] + 1), data[:,1])
         plt.xlabel('Iterations')
         plt.ylabel('Sumative Intensify')
-        plt.savefig(os.path.join(output_dir, 'SumativeIntensify.png'))
+        plt.savefig(os.path.join(output_dir, 'ASID_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'SumativeIntensify.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'ASID_T.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'AccumulatedIntensify.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'AccumulatedIntensify_T.txt'))
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Accumulate Intensify')
-        plt.savefig(os.path.join(output_dir, 'AccumulatedIntensify.png'))
+        plt.savefig(os.path.join(output_dir, 'AccumulatedIntensify_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'AccumulatedIntensify.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'AccumulatedIntensify_T.txt')}")
 
     try:
         data = np.loadtxt(os.path.join(input_dir, 'EntropyWithSphere.txt'))
-        plt.plot(data[:,0], data[:,1])
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Entropy With Sphere')
         plt.savefig(os.path.join(output_dir, 'EntropyWithSphere.png'))
@@ -392,110 +392,134 @@ def mainTrayectorial(input_dir):
         plt.xticks(rotation=45)
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'SpheresAreas_boxplot.png'), dpi=300)
+        plt.savefig(os.path.join(output_dir, 'SpheresAreas.png'), dpi=300)
         plt.clf()
     except FileNotFoundError:
         print(f"Warning: Could not find {os.path.join(input_dir, 'SpheresAreas.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'ConvRate.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'ConvRate_T.txt'))
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Convergence Rate')
-        plt.savefig(os.path.join(output_dir, 'ConvRate.png'))
+        plt.savefig(os.path.join(output_dir, 'ConvRate_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'ConvRate.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'ConvRate_T.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'ConvRateOpt.txt'))
-        plt.plot(data[:,0], data[:,1])
-        plt.xlabel('Iterations')
-        plt.ylabel('Convergence Rate with Optimum')
-        plt.savefig(os.path.join(output_dir, 'ConvRateOpt.png'))
-        plt.clf()
-    except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'ConvRateOpt.txt')}")
-
-    try:
-        data = np.loadtxt(os.path.join(input_dir, 'Improvement.txt'))
-        plt.plot(data[:,0], data[:,1])
-        plt.xlabel('Iterations')
+        data = np.loadtxt(os.path.join(input_dir, 'DistImp_T.txt'))
+        plt.figure(figsize=(12, 8))
+        plt.boxplot(data, labels=['DistImp_T'])
         plt.ylabel('Improvement')
-        plt.savefig(os.path.join(output_dir, 'Improvement.png'))
+        plt.xticks(rotation=45)
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'DistImp_T.png'), dpi=300)
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'Improvement.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'DistImp_T.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'ErrorRate.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'DistDet_T.txt'))
+        plt.figure(figsize=(12, 8))
+        plt.boxplot(data, labels=['DistDet_T'])
+        plt.ylabel('Deterioration')
+        plt.xticks(rotation=45)
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'DistDet_T.png'), dpi=300)
+        plt.clf()
+    except FileNotFoundError:
+        print(f"Warning: Could not find {os.path.join(input_dir, 'DistDet_T.txt')}")
+
+    try:
+        data = np.loadtxt(os.path.join(input_dir, 'RelError_T.txt'))
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Error Rate')
-        plt.savefig(os.path.join(output_dir, 'ErrorRate.png'))
+        plt.savefig(os.path.join(output_dir, 'RelError_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'ErrorRate.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'RelError_T.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'GeomRate.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'GeoConvRate_T.txt'))
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Geometric Rate')
-        plt.savefig(os.path.join(output_dir, 'GeomRate.png'))
+        plt.savefig(os.path.join(output_dir, 'GeoConvRate_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'GeomRate.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'GeoConvRate_T.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'VectorDiversity.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'VectorDiversity_T.txt'))
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Diversity')
-        plt.savefig(os.path.join(output_dir, 'VectorDiversity.png'))
+        plt.savefig(os.path.join(output_dir, 'VectorDiversity_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'VectorDiversity.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'VectorDiversity_T.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'DistanceHammingfromZero.txt'))
-        plt.plot(data[:,0], data[:,1])
-        plt.xlabel('Iterations')
-        plt.ylabel('Distance Hamming from Zero')
-        plt.savefig(os.path.join(output_dir, 'DistanceHammingfromZero.png'))
-        plt.clf()
-    except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'DistanceHammingfromZero.txt')}")
-
-    try:
-        data = np.loadtxt(os.path.join(input_dir, 'DistanceHamming.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'HamDist_T.txt'))
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Distance Hamming')
-        plt.savefig(os.path.join(output_dir, 'DistanceHamming.png'))
+        plt.savefig(os.path.join(output_dir, 'HamDist_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'DistanceHamming.txt')}")
-    
-    try:
-        data = np.loadtxt(os.path.join(input_dir, 'DistanceHammingFromLocalBest.txt'))
-        plt.plot(data[:,0], data[:,1])
-        plt.xlabel('Iterations')
-        plt.ylabel('Distance Hamming from Local Best')
-        plt.savefig(os.path.join(output_dir, 'DistanceHammingFromLocalBest.png'))
-        plt.clf()
-    except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'DistanceHammingFromLocalBest.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'HamDist_T.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'EntropyDiversity.txt'))
-        plt.plot(data[:,0], data[:,1])
+        data = np.loadtxt(os.path.join(input_dir, 'EntropyDiv_T.txt'))
+        plt.plot(np.arange(1, data.size + 1), data)
         plt.xlabel('Iterations')
         plt.ylabel('Entropy Diversity')
-        plt.savefig(os.path.join(output_dir, 'EntropyDiversity.png'))
+        plt.savefig(os.path.join(output_dir, 'EntropyDiv_T.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'EntropyDiversity.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'EntropyDiv_T.txt')}")
+
+    try:
+        data = np.loadtxt(os.path.join(input_dir, 'EValue_T.txt'))
+        categories = ['n_quality', 'n_convergence', 'e_value']
+        fig, ax = plt.subplots(figsize=(8, 6))
+        table_data = [[f"{data[0]:.2f}"], [f"{data[1]:.2f}"], [f"{data[2]:.2f}"]]
+        table = ax.table(cellText=table_data,
+                            rowLabels=categories,
+                            colLabels=['Value'],
+                            cellLoc='center',
+                            loc='center')
+        table.auto_set_font_size(False)
+        table.set_fontsize(12)
+        ax.axis('off')
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'EValue_T.png'), dpi=300, bbox_inches='tight')
+        plt.clf()
+    except:
+        print(f"Warning: Could not find {os.path.join(input_dir, 'EValue_T.txt')}")
+
+    try:
+        data = np.loadtxt(os.path.join(input_dir, 'OperatorRate_T.txt'))
+        categories = ['Operaror Application Rate', 'Operator Deterioration Rate', 'Operator Improvement Rate']
+        fig, ax = plt.subplots(figsize=(8, 6))
+        table_data = [[f"{data[0]:.2f}"], [f"{data[1]:.2f}"], [f"{data[2]:.2f}"]]
+        table = ax.table(cellText=table_data,
+                            rowLabels=categories,
+                            colLabels=['Value'],
+                            cellLoc='center',
+                            loc='center')
+        table.auto_set_font_size(False)
+        table.set_fontsize(12)
+        ax.axis('off')
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'OperatorRate_T.png'), dpi=300, bbox_inches='tight')
+        plt.clf()
+    except:
+        print(f"Warning: Could not find {os.path.join(input_dir, 'OperatorRate_T.txt')}")
 
 def load_generation_mapping(raw_data_path):
     try:
@@ -871,7 +895,7 @@ if __name__ == "__main__":
 
     if args.typeOfAnalyzer == 'populationBased':
         mainPopulationBased(args.input_dir)
-    elif args.typeOfAnalyzer == 'trayectorial':
+    elif args.typeOfAnalyzer == 'trayectorialBased':
         mainTrayectorial(args.input_dir)
     elif args.typeOfAnalyzer == 'combined':
         if not args.pop_dir or not args.traj_dir:
