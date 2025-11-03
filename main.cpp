@@ -505,8 +505,8 @@ std::map<std::string, std::string> readConfig(const std::string& filename) {
     return config;
 }
 
-std::vector<Domain> generarDominios(const std::string& archivo, int numVars) {
-    std::vector<Domain> dominios(numVars, {0, 0});
+std::vector<Domain_T> generarDominios(const std::string& archivo, int numVars) {
+    std::vector<Domain_T> dominios(numVars, {0, 0});
     std::ifstream file(archivo);
     std::string linea;
     bool todos = false;
@@ -591,7 +591,7 @@ int main(int argc, char **argv) {
             }
             std::string domainFile = config["domainFile"];
             std::cout << "Loading custom domains from: " << domainFile << std::endl;
-            std::vector<Domain> domains = generarDominios(domainFile, n_var);
+            std::vector<Domain_T> domains = generarDominios(domainFile, n_var);
             std::cout << "Custom domains loaded successfully" << std::endl;
         }
         
@@ -621,7 +621,7 @@ int main(int argc, char **argv) {
         int entropySize = std::stoi(config["entropy_zones"]);
         double qthr = std::stod(config["qthr"]);
 
-        std::vector<Domain> domains = {};
+        std::vector<Domain_T> domains = {};
         if (customDomain) {
             std::string domainFile = config["domainFile"];
             domains = generarDominios(domainFile, n);

@@ -9,7 +9,7 @@
 #include <eigen/Eigen/Dense>
 #include <cfloat>
 
-struct Domain {
+struct Domain_T {
     double min;
     double max;
 };
@@ -19,7 +19,7 @@ class RuntimeInfo {
         std::vector<double> fevals;
         double time;
         std::vector<std::vector<double>> x; // xVectorsPerEvaluation
-        std::vector<Domain> domains;
+        std::vector<Domain_T> domains;
         double f_best;
         bool maximize = true;
 
@@ -48,14 +48,14 @@ class RuntimeInfo {
             f_best = 0;
         }
 
-        RuntimeInfo(bool maximize, std::vector<Domain> domains) : maximize(maximize), domains(domains) {
+        RuntimeInfo(bool maximize, std::vector<Domain_T> domains) : maximize(maximize), domains(domains) {
             fevals = {};
             time = {};
             x = {};
             f_best = 0;
         }
 
-        RuntimeInfo(bool maximize, std::vector<Domain> domains, double threshold) : maximize(maximize), domains(domains), threshold(threshold) {
+        RuntimeInfo(bool maximize, std::vector<Domain_T> domains, double threshold) : maximize(maximize), domains(domains), threshold(threshold) {
             fevals = {};
             time = {};
             x = {};

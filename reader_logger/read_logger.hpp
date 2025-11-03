@@ -7,7 +7,7 @@
 #include "../models/InfoRuntime.hpp"
 #include "../models/InfoProblem.hpp"
 
-std::vector<RuntimeInfo> readLogger(const std::string& filePath, bool maximize = true, std::vector<Domain> domains = std::vector<Domain>(), double threshold = 0.0) {
+std::vector<RuntimeInfo> readLogger(const std::string& filePath, bool maximize = true, std::vector<Domain_T> domains = std::vector<Domain_T>(), double threshold = 0.0) {
     std::vector<RuntimeInfo> data;
     std::ifstream file(filePath);
     if (!file.is_open()) {

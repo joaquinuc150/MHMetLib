@@ -158,7 +158,7 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
     }
 }
 
-void outputMetrics(std::string path, int n, int R, double threshold, int entropySize, std::vector<Domain> domains = std::vector<Domain>(), HammingDistanceVariantEnum hdVariant = HammingDistanceVariantEnum::FromZero, bool maxProblem = true) {
+void outputMetrics(std::string path, int n, int R, double threshold, int entropySize, std::vector<Domain_T> domains = std::vector<Domain_T>(), HammingDistanceVariantEnum hdVariant = HammingDistanceVariantEnum::FromZero, bool maxProblem = true) {
     std::cerr << "Reading logger data from " << path << std::endl;
     std::string fileName = path.substr(0, path.find_first_of("/")) + "-" + path.substr(path.find_last_of("/") + 1, path.find_last_of(".") - path.find_last_of("/") - 1);
 
