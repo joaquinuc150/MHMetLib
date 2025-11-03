@@ -33,7 +33,7 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         std::cout << "getfBest: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        data[i].calculateIntensify(maxProblem);
+        data[i].calculateIntensify();
         end = std::chrono::high_resolution_clock::now();
         std::cout << "calculateIntensify: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
@@ -53,7 +53,7 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         std::cout << "EntropyWithSphere: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "SpheresAreas", data[i].getSpheresAreasForIteration(n));
+        output_file_vector(filePathOutput, "SpheresAreas", data[i].getSpheresAreas(n, data[i].getX()));
         end = std::chrono::high_resolution_clock::now();
         std::cout << "SpheresAreas: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
@@ -151,10 +151,10 @@ void outputMetrics(std::string path, int n, int entropySize, std::vector<Domain>
     std::string fileName = path.substr(0, path.find_first_of("/")) + "-" + path.substr(path.find_last_of("/") + 1, path.find_last_of(".") - path.find_last_of("/") - 1);
 
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<RuntimeInfo> data = readLogger(path, maximaze, domains);
+    std::vector<RuntimeInfo> data = readLogger(path, maxProblem, domains);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "readLogger: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
     std::cerr << "Creating file output with base name " << fileName << std::endl;
-    createFileOutput(fileName, data, n, entropySize);
+    createFileOutput(fileName, data, n, entropySize, hdVariant, maxProblem);
 }

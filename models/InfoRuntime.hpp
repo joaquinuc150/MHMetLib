@@ -9,11 +9,6 @@
 #include <eigen/Eigen/Dense>
 #include <cfloat>
 
-struct Domain {
-    double min;
-    double max;
-};
-
 class RuntimeInfo {
     private:
         std::vector<double> fevals;

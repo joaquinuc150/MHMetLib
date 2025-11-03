@@ -10,6 +10,13 @@
 #include "SimpleMatrix.h"
 #include <unordered_set>
 #include <cfloat>
+#include <stdexcept>
+
+struct Domain {
+    double min;
+    double max;
+};
+
 namespace ioh {
     namespace common {
         enum class HammingDistanceType {
@@ -22,11 +29,6 @@ namespace ioh {
             ZERO_CENTER,
             BEST_INDIVIDUAL_CENTER,
             CUSTOM_CENTER
-        };
-
-        struct Domain {
-            double min;
-            double max;
         };
 
         class MetricsAnalyzer {
@@ -401,6 +403,9 @@ namespace ioh {
 
                 void MDSSearchSpaceDivision(int targetSectors = 8) {
                     int divisionsPerDim = std::ceil(std::cbrt(targetSectors));
+        if (divisionsPerDim == 0) {
+            throw std::runtime_error("Error: Invalid targetSectors (" + std::to_string(targetSectors) + ") resulted in zero divisions.");
+        }
                     int actualSectors = std::pow(divisionsPerDim, 3);
                     
                     MDS3();
@@ -575,7 +580,7 @@ namespace ioh {
                     return sqrt(distance);
                 }
 
-                std::vector<double> objectiveValueOverTime() {
+                std::vector<double> ConvGraph() {
                     if (dataNames.empty()) {
                         std::cerr << "No data available" << std::endl;
                         return {};
@@ -593,7 +598,7 @@ namespace ioh {
                     }
                 }
 
-                std::vector<double> objectiveValueBestSolutionOverTime(){
+                std::vector<double> CurrentB(){
                     if (dataNames.empty()) {
                         std::cerr << "No data available" << std::endl;
                         return {};
@@ -614,12 +619,20 @@ namespace ioh {
                     }
                 }
 
-                std::vector<double> changeInObjectiveValuePerGeneration(){
+                std::vector<double> changeInObjectiveValuePerGeneration(bool maxProblem){
+
                     std::vector<double> changeInObjectiveValue;
                     double maxPrevious = 0;
                     double maxCurrent = 0;
                     for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
-                        maxPrevious = *std::max_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
+                        if (maxProblem) {
+                maxPrevious = *std::max_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
+                maxCurrent = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
+            } else {
+                maxPrevious = *std::min_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
+                maxCurrent = *std::min_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
+            }
+            // Remove old lines(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
                         maxCurrent = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
                         changeInObjectiveValue.push_back(maxCurrent - maxPrevious);
                     }
@@ -641,7 +654,7 @@ namespace ioh {
                     return objectiveValuePerInividualPerGeneration;
                 }
 
-                std::vector<double> calculateConvergenceOptimumBased(int optimum, bool maxProblem) {
+                std::vector<double> ConvRate(int optimum, bool maxProblem) {
                     std::vector<double> convergence;
                     if (maxProblem) {
                     for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
@@ -709,7 +722,7 @@ namespace ioh {
                     return convergence;
                 }
 
-                std::vector<double> relError(int optimum, bool maxProblem) {
+                std::vector<double> RelError(int optimum, bool maxProblem) {
                     std::vector<double> error;
                     if (maxProblem) {
                         for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
@@ -769,7 +782,8 @@ namespace ioh {
                     return convergence;
                 }
 
-                std::vector<double> calculateConvergenceSteps() {
+                std::vector<double> calculateConvergenceSteps(bool maxProblem){
+
                     if (dataNames.empty()) {
                         std::cerr << "No data available" << std::endl;
                         return {};
@@ -792,7 +806,7 @@ namespace ioh {
                     return convergence;
                 }
 
-                std::vector<double> geometricRateofFitnessChangePerGeneration(int optimum, int n_firstGen, int n_children){
+                std::vector<double> GeoConvRate(int optimum, int n_firstGen, int n_children){
                     if (dataNames.empty()) {
                         std::cerr << "No data available" << std::endl;
                         return {};
@@ -842,7 +856,7 @@ namespace ioh {
                     }
                     
                     if (n_sim == 0) {
-                        return 0.0;
+                        throw std::runtime_error("Error: No solution values found in input data. Check data file format.");
                     }
                     
                     return n_successful / n_sim;
@@ -866,24 +880,27 @@ namespace ioh {
                     return static_cast<double>(uniqueSolutions.size()) / combinations;
                 }
 
-                double e_value(int optimum) {
-                    double n_quality = calculate_n_quality(optimum);
+                double EValue(int optimum, double qthr) {
+                    double n_quality = calculate_n_quality(optimum, qthr);
                     double n_convergence = calculate_n_convergence();
-                    
+
                     if (std::abs(n_convergence) < AVOID_ZERO) {
                         n_convergence = AVOID_ZERO;
                     }
-                    
+
                     return n_quality / n_convergence;
                 }
-                double e_value(double n_quality, double n_convergence) {
+                double EValue(double n_quality, double n_convergence) {
                     if (std::abs(n_convergence) < AVOID_ZERO) {
                         n_convergence = AVOID_ZERO;
                     }
                     return n_quality / n_convergence;
                 }
 
-                std::vector<double> hammingDistanceMain(HammingDistanceType type = HammingDistanceType::GLOBAL_BEST){
+                std::vector<double> hammingDistanceMain(HammingDistanceType type, bool maxProblem){
+        if (n_var == 0) {
+            throw std::runtime_error("Error: n_var is zero. Check MetricsAnalyzer initialization.");
+        }
                     std::vector<double> hammingDistances;
                     std::vector<double> bestGlobalSolution;
                     
@@ -926,7 +943,12 @@ namespace ioh {
 
                 std::vector<double> entropyDiversity(int n_areas = 8){
                     SearchSpaceDivisionByGeneration();
-                    double diversity = 0;
+
+        if (n_children == 0) {
+            throw std::runtime_error("Error: n_children is zero. Check MetricsAnalyzer initialization.");
+        }
+
+        double diversity = 0;
                     std::vector<double> areaScoresVector;
                     
                     if (n_children == 0) {
@@ -955,12 +977,7 @@ namespace ioh {
                     return areaScoresVector;
                 }
 
-                std::vector<std::vector<double>> diversityDistanceToCenter(
-                    int R, 
-                    DiversityCenterType centerType = DiversityCenterType::ZERO_CENTER,
-                    const std::vector<double>& customCenter = std::vector<double>(),
-                    const std::vector<Domain>& variableRanges = std::vector<Domain>()
-                ) {
+                std::vector<std::vector<double>> diversityDistanceToCenter(int R, DiversityCenterType centerType = DiversityCenterType::ZERO_CENTER, const std::vector<double>& customCenter = std::vector<double>(), const std::vector<Domain>& variableRanges = std::vector<Domain>(), bool maxProblem = true) {
                     if (R == 0) {
                         std::cerr << "R cannot be zero for diversity calculation" << std::endl;
                         return std::vector<std::vector<double>>();
@@ -1055,7 +1072,7 @@ namespace ioh {
                     return diversity;
                 }
 
-                std::vector<double> accumSum(bool maxProblem){
+                std::vector<double> ASID(bool maxProblem){
                     std::vector<double> accumSumVector;
                     double sum = 0;
                     double max, previousMax;
@@ -1445,6 +1462,63 @@ namespace ioh {
 
                     return std::make_tuple(meanImprovementCrossovers, meanDeteriorationCrossovers);
                 }
+
+    // Distribution of Improvement
+    std::vector<double> DistImp(bool maxProblem){
+        std::vector<double> improvements;
+        for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
+            double extremePrevious, extremeCurrent;
+            if (maxProblem) {
+                extremePrevious = *std::max_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
+                extremeCurrent = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
+            } else {
+                extremePrevious = *std::min_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
+                extremeCurrent = *std::min_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
+            }
+            double change = extremeCurrent - extremePrevious;
+            bool isImprovement = maxProblem ? (change > 0) : (change < 0);
+            if (isImprovement) {
+                improvements.push_back(std::abs(change));
+            } else {
+                improvements.push_back(0);
+            }
+        }
+        return improvements;
+    }
+
+    // Distribution of Deterioration
+    std::vector<double> DistDet(bool maxProblem){
+        std::vector<double> deteriorations;
+        for (size_t i = 1; i < objectiveValuePerGeneration.size(); ++i) {
+            double extremePrevious, extremeCurrent;
+            if (maxProblem) {
+                extremePrevious = *std::max_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
+                extremeCurrent = *std::max_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
+            } else {
+                extremePrevious = *std::min_element(objectiveValuePerGeneration[i - 1].begin(), objectiveValuePerGeneration[i - 1].end());
+                extremeCurrent = *std::min_element(objectiveValuePerGeneration[i].begin(), objectiveValuePerGeneration[i].end());
+            }
+            double change = extremeCurrent - extremePrevious;
+            bool isDeterioration = maxProblem ? (change < 0) : (change > 0);
+            if (isDeterioration) {
+                deteriorations.push_back(std::abs(change));
+            } else {
+                deteriorations.push_back(0);
+            }
+        }
+        return deteriorations;
+    }
+
+    // Wrapper for EntropyDiv
+    std::vector<double> EntropyDiv(int n_areas){
+        return entropyDiversity(n_areas);
+    }
+
+    // Wrapper for HamDist
+    std::vector<double> HamDist(HammingDistanceType type, bool maxProblem){
+        return hammingDistanceMain(type, maxProblem);
+    }
+
         };
     }
 }
