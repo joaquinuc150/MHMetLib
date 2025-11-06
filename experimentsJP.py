@@ -63,7 +63,7 @@ def main():
             successful += 1
     
     print(f"Completed: {successful}/{total} successful")
-        sys.exit(1)
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()

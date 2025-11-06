@@ -12,43 +12,62 @@ def mainPopulationBased(input_dir):
         print(f"Error creating output directory: {e}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'objectiveValueOverTime.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'ConvGraph_P.txt'))
         plt.figure(figsize=(10, 6))
         plt.plot(data[:,0], data[:,1])
         plt.xlabel('Evaluation')
         plt.ylabel('Objective Function')
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'objectiveFunctionOverTime.png'), dpi=300, bbox_inches='tight')
+        plt.savefig(os.path.join(output_dir, 'ConvGraph_P.png'), dpi=300, bbox_inches='tight')
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'objectiveValueOverTime.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'ConvGraph_P.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'objectiveValueBestSolutionOverTime.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'CurrentB_P.txt'))
         plt.figure(figsize=(10, 6))
         plt.plot(data[:,0], data[:,1])
         plt.xlabel('Generation')
         plt.ylabel('Objective Value Best Solution')
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'objectiveValueBestSolutionOverTime.png'), dpi=300, bbox_inches='tight')
+        plt.savefig(os.path.join(output_dir, 'CurrentB_P.png'), dpi=300, bbox_inches='tight')
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'objectiveValueBestSolutionOverTime.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'CurrentB_P.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'changeInObjectiveValuePerGeneration.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'DistImp_P.txt'))
+        non_zero_improvements = data[data[:,1] != 0, 1]
+
         plt.figure(figsize=(10, 6))
-        plt.plot(data[:,0], data[:,1])
-        plt.xlabel('Generation')
-        plt.ylabel('Change in Objective Value')
+        if len(non_zero_improvements) > 0:
+            plt.boxplot([non_zero_improvements], labels=['Improvements'], patch_artist=True,
+                        boxprops=dict(facecolor='lightgreen'))
+        plt.ylabel('Improvement Magnitude')
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'changeInObjectiveValuePerGeneration.png'), dpi=300, bbox_inches='tight')
+        plt.savefig(os.path.join(output_dir, 'DistImp_P.png'), dpi=300, bbox_inches='tight')
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'changeInObjectiveValuePerGeneration.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'DistImp_P.txt')}")
+
+    try:
+        data = np.loadtxt(os.path.join(input_dir, 'DistDet_P.txt'))
+        non_zero_deteriorations = data[data[:,1] != 0, 1]
+
+        plt.figure(figsize=(10, 6))
+        if len(non_zero_deteriorations) > 0:
+            plt.boxplot([non_zero_deteriorations], labels=['Deteriorations'], patch_artist=True,
+                        boxprops=dict(facecolor='lightcoral'))
+        plt.ylabel('Deterioration Magnitude')
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'DistDet_P.png'), dpi=300, bbox_inches='tight')
+        plt.clf()
+    except FileNotFoundError:
+        print(f"Warning: Could not find {os.path.join(input_dir, 'DistDet_P.txt')}")
 
     try:
         with open(os.path.join(input_dir, 'rateOfChangePerIndividualPerGeneration.txt'), 'r') as file:
@@ -69,16 +88,16 @@ def mainPopulationBased(input_dir):
         print(f"Warning: Could not find {os.path.join(input_dir, 'rateOfChangePerIndividualPerGeneration.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'convergenceOptimumBased.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'ConvRate_P.txt'))
         plt.figure()
         plt.plot(data[:,0], data[:,1])
         plt.autoscale()
         plt.xlabel('Generation')
         plt.ylabel('Convergence Optimum Based')
-        plt.savefig(os.path.join(output_dir, 'convergenceOptimumBased.png'))
+        plt.savefig(os.path.join(output_dir, 'ConvRate_P.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'convergenceOptimumBased.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'ConvRate_P.txt')}")
 
     try:
         data = np.loadtxt(os.path.join(input_dir, 'classicConvergenceOptimumBased.txt'))
@@ -91,15 +110,15 @@ def mainPopulationBased(input_dir):
         print(f"Warning: Could not find {os.path.join(input_dir, 'classicConvergenceOptimumBased.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'relError.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'RelError_P.txt'))
         plt.plot(data[:,0], data[:,1])
         plt.xlabel('Generation')
         plt.ylabel('Relative Error')
         plt.title('Relative Error per Generation')
-        plt.savefig(os.path.join(output_dir, 'relError.png'))
+        plt.savefig(os.path.join(output_dir, 'RelError_P.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'relError.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'RelError_P.txt')}")
 
     try:
         with open(os.path.join(input_dir, 'convergenceStepsPerIndividual.txt'), 'r') as file:
@@ -130,24 +149,24 @@ def mainPopulationBased(input_dir):
         print(f"Warning: Could not find {os.path.join(input_dir, 'convergenceSteps2.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'geometricRateOfFitnessChangePerGeneration.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'GeoConvRate_P.txt'))
         plt.plot(data[:,0], data[:,1])
         plt.xlabel('Generation')
         plt.ylabel('Geometric Rate of Fitness Change')
-        plt.savefig(os.path.join(output_dir, 'geometricRateOfFitnessChangePerGeneration.png'))
+        plt.savefig(os.path.join(output_dir, 'GeoConvRate_P.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'geometricRateOfFitnessChangePerGeneration.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'GeoConvRate_P.txt')}")
     
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'entropyDiversity.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'EntropyDiv_P.txt'))
         plt.plot(data[:,0], data[:,1])
         plt.xlabel('Generation')
         plt.ylabel('Entropy Diversity')
-        plt.savefig(os.path.join(output_dir, 'entropyDiversity.png'))
+        plt.savefig(os.path.join(output_dir, 'EntropyDiv_P.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'entropyDiversity.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'EntropyDiv_P.txt')}")
     
     try:
         data = np.loadtxt(os.path.join(input_dir, 'rateOfModificationsPerOperator.txt'))
@@ -200,7 +219,7 @@ def mainPopulationBased(input_dir):
         print(f"Warning: Could not find rate of deterioration files")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'e_value.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'EValue_P.txt'))
         categories = ['n_quality', 'n_convergence', 'e_value']
         colors = []
         
@@ -230,102 +249,43 @@ def mainPopulationBased(input_dir):
         ax.set_facecolor('#f0f0f0')
         
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'e_value.png'), dpi=300, bbox_inches='tight')
+        plt.savefig(os.path.join(output_dir, 'EValue_P.png'), dpi=300, bbox_inches='tight')
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'e_value.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'EValue_P.txt')}")
     except Exception as e:
         print(f"Error processing e_value.txt: {str(e)}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'accumSum.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'ASID_P.txt'))
         plt.plot(data[:,0], data[:,1])
         plt.xlabel('Generation')
         plt.ylabel('Accumulative Sum')
-        plt.savefig(os.path.join(output_dir, 'accumSum.png'))
+        plt.savefig(os.path.join(output_dir, 'ASID_P.png'))
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'accumSum.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'ASID_P.txt')}")
 
     try:
         with open(os.path.join(input_dir, 'diversityDistanceToCenter.txt'), 'r') as file:
             lines = file.readlines()
         data = [list(map(int, line.strip().split())) for line in lines]
-        
-        k = 5
-        selected_indices = list(range(0, len(data), k))
-        if len(data) - 1 not in selected_indices:
-            selected_indices.append(len(data) - 1)
-        
-        selected_data = [data[i] for i in selected_indices]
-        labels = [f"Gen {i}" for i in selected_indices]
-        
-        plt.figure(figsize=(12, 8))
-        plt.boxplot(selected_data, labels=labels)
-        plt.xlabel('Generation')
+
+        # Flatten all data from all generations into a single list
+        all_distances = []
+        for generation_data in data:
+            all_distances.extend(generation_data)
+
+        plt.figure(figsize=(10, 6))
+        plt.boxplot([all_distances], labels=['All Generations'],
+                    patch_artist=True, boxprops=dict(facecolor='lightblue'))
         plt.ylabel('Distance to Center')
-        plt.xticks(rotation=45)
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, 'diversityDistanceToCenter_boxplot.png'), dpi=300)
         plt.clf()
     except FileNotFoundError:
         print(f"Warning: Could not find {os.path.join(input_dir, 'diversityDistanceToCenter.txt')}")
-
-    try:
-        with open(os.path.join(input_dir, 'diversityDistanceToCenter2.txt'), 'r') as file:
-            lines = file.readlines()
-        data = [list(map(int, line.strip().split())) for line in lines]
-        
-        k = 5
-        selected_indices = list(range(0, len(data), k))
-        if len(data) - 1 not in selected_indices:
-            selected_indices.append(len(data) - 1)
-        
-        selected_data = [data[i] for i in selected_indices]
-        labels = [f"Gen {i}" for i in selected_indices]
-        
-        plt.figure(figsize=(12, 8))
-        plt.boxplot(selected_data, labels=labels)
-        plt.xlabel('Generation')
-        plt.ylabel('Distance to Center (Best Individual)')
-        plt.xticks(rotation=45)
-        plt.grid(True, linestyle='--', alpha=0.7)
-        plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'diversityDistanceToCenter2_boxplot.png'), dpi=300)
-        plt.clf()
-    except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'diversityDistanceToCenter2.txt')}")
-
-    try:
-        data = np.loadtxt(os.path.join(input_dir, 'hammingDistanceBestSolutionPerGeneration.txt'))
-        plt.plot(data[:,0], data[:,1])
-        plt.xlabel('Generation')
-        plt.ylabel('Hamming Distance')
-        plt.savefig(os.path.join(output_dir, 'hammingDistanceBestSolutionPerGeneration.png'))
-        plt.clf()
-    except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'hammingDistanceBestSolutionPerGeneration.txt')}")
-
-    try:
-        data = np.loadtxt(os.path.join(input_dir, 'hammingDistanceBestSolutionPerGeneration2.txt'))
-        plt.plot(data[:,0], data[:,1])
-        plt.xlabel('Generation')
-        plt.ylabel('Hamming Distance')
-        plt.savefig(os.path.join(output_dir, 'hammingDistanceBestSolutionPerGeneration2.png'))
-        plt.clf()
-    except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'hammingDistanceBestSolutionPerGeneration2.txt')}")
-
-    try:
-        data = np.loadtxt(os.path.join(input_dir, 'hammingDistanceBestSolutionPerGeneration3.txt'))
-        plt.plot(data[:,0], data[:,1])
-        plt.xlabel('Generation')
-        plt.ylabel('Hamming Distance')
-        plt.savefig(os.path.join(output_dir, 'hammingDistanceBestSolutionPerGeneration3.png'))
-        plt.clf()
-    except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'hammingDistanceBestSolutionPerGeneration3.txt')}")
 
 def mainTrayectorial(input_dir):
     output_dir = os.path.join(input_dir, 'figures')
@@ -578,17 +538,17 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
         print("Warning: Could not load generation mapping. Using original data without alignment.")
 
     generation_based_files = [
-        'objectiveValueBestSolutionOverTime.txt',
-        'convergenceOptimumBased.txt', 
+        'CurrentB_P.txt',
+        'ConvRate_P.txt', 
         'changeInObjectiveValuePerGeneration.txt',
         'geometricRateofFitnessChangePerGeneration.txt',
         'hammingDistanceBestSolutionPerGeneration.txt',
-        'relError.txt'
+        'RelError_P.txt'
     ]
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_data = np.loadtxt(os.path.join(pop_dir, 'objectiveValueOverTime.txt'))
+        pop_data = np.loadtxt(os.path.join(pop_dir, 'ConvGraph_P.txt'))
         plt.plot(pop_data[:,0], pop_data[:,1], 'b-', label='Population-based', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find population objectiveValueOverTime.txt")
@@ -609,7 +569,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_best_gen = np.loadtxt(os.path.join(pop_dir, 'objectiveValueBestSolutionOverTime.txt'))
+        pop_best_gen = np.loadtxt(os.path.join(pop_dir, 'CurrentB_P.txt'))
         if generation_map:
             pop_best_eval = convert_generation_to_evaluation_based(pop_best_gen, generation_map, total_evals)
             if len(pop_best_eval) > 0:
@@ -637,7 +597,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_conv_gen = np.loadtxt(os.path.join(pop_dir, 'convergenceOptimumBased.txt'))
+        pop_conv_gen = np.loadtxt(os.path.join(pop_dir, 'ConvRate_P.txt'))
         if generation_map:
             pop_conv_eval = convert_generation_to_evaluation_based(pop_conv_gen, generation_map, total_evals)
             if len(pop_conv_eval) > 0:
@@ -665,7 +625,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     '''
     plt.figure(figsize=(12, 8))
     try:
-        pop_div = np.loadtxt(os.path.join(pop_dir, 'entropyDiversity.txt'))
+        pop_div = np.loadtxt(os.path.join(pop_dir, 'EntropyDiv_P.txt'))
         plt.plot(pop_div[:,0], pop_div[:,1], 'b-', label='Population Entropy Diversity', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find population diversity data")
@@ -742,7 +702,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_entropy = np.loadtxt(os.path.join(pop_dir, 'entropyDiversity.txt'))
+        pop_entropy = np.loadtxt(os.path.join(pop_dir, 'EntropyDiv_P.txt'))
         plt.plot(pop_entropy[:,0], pop_entropy[:,1], 'b-', label='Population Entropy', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find population entropy data")
@@ -791,7 +751,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
 
     plt.figure(figsize=(12, 8))
     try:
-        pop_error_gen = np.loadtxt(os.path.join(pop_dir, 'relError.txt'))
+        pop_error_gen = np.loadtxt(os.path.join(pop_dir, 'RelError_P.txt'))
         if generation_map:
             pop_error_eval = convert_generation_to_evaluation_based(pop_error_gen, generation_map, total_evals)
             if len(pop_error_eval) > 0:
@@ -820,7 +780,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
     
     try:
-        pop_obj_gen = np.loadtxt(os.path.join(pop_dir, 'objectiveValueBestSolutionOverTime.txt'))
+        pop_obj_gen = np.loadtxt(os.path.join(pop_dir, 'CurrentB_P.txt'))
         traj_obj = np.loadtxt(os.path.join(traj_dir, 'FevalsBest.txt'))
         
         final_values = [pop_obj_gen[-1,1], traj_obj[-1]]
@@ -834,7 +794,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
         ax1.text(0.5, 0.5, 'Data not available', ha='center', va='center', transform=ax1.transAxes)
     
     try:
-        pop_conv_gen = np.loadtxt(os.path.join(pop_dir, 'convergenceOptimumBased.txt'))
+        pop_conv_gen = np.loadtxt(os.path.join(pop_dir, 'ConvRate_P.txt'))
         traj_conv = np.loadtxt(os.path.join(traj_dir, 'ConvRateOpt.txt'))
         
         if generation_map:
@@ -855,7 +815,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
         ax2.text(0.5, 0.5, 'Convergence data\nnot available', ha='center', va='center', transform=ax2.transAxes)
     
     try:
-        pop_div = np.loadtxt(os.path.join(pop_dir, 'entropyDiversity.txt'))
+        pop_div = np.loadtxt(os.path.join(pop_dir, 'EntropyDiv_P.txt'))
         traj_div = np.loadtxt(os.path.join(traj_dir, 'EntropyDiversity.txt'))
         
         ax3.plot(pop_div[:,0], pop_div[:,1], 'b-', label='Population', linewidth=2)
@@ -868,7 +828,7 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
         ax3.text(0.5, 0.5, 'Diversity data\nnot available', ha='center', va='center', transform=ax3.transAxes)
     
     try:
-        pop_obj = np.loadtxt(os.path.join(pop_dir, 'objectiveValueOverTime.txt'))
+        pop_obj = np.loadtxt(os.path.join(pop_dir, 'ConvGraph_P.txt'))
         traj_obj = np.loadtxt(os.path.join(traj_dir, 'Fevals.txt'))
         
         ax4.plot(pop_obj[:,0], pop_obj[:,1], 'b-', label='Population', linewidth=2)

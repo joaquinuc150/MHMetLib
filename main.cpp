@@ -13,23 +13,8 @@
 
 namespace fs = std::filesystem;
 
-enum class HammingDistanceType {
-    FIRST_GEN_BEST,
-    PREVIOUS_GEN_BEST,
-    GLOBAL_BEST
-};
-
-enum class DiversityCenterType {
-    ZERO_CENTER,
-    BEST_INDIVIDUAL_CENTER,
-    CUSTOM_CENTER
-};
-
-struct Domain {
-    double min;
-    double max;
-};
-
+using HammingDistanceType = ioh::common::HammingDistanceType;
+using DiversityCenterType = ioh::common::DiversityCenterType;
 
 ioh::common::MetricsAnalyzer prepareData(ioh::common::MetricsAnalyzer metricsAnalyzer, std::string fileName, int n_var, int n_firstGen, int n_children, int optimum, int entropyZones) {
     std::cout << "Reading data from file" << std::endl;
@@ -44,12 +29,12 @@ ioh::common::MetricsAnalyzer prepareData(ioh::common::MetricsAnalyzer metricsAna
     metricsAnalyzer.createObjectiveValuePerGeneration();
 
     std::cout << "MDS" << std::endl;
-    metricsAnalyzer.MDSSearchSpaceDivisionCustomSectors(entropyZones);
+    metricsAnalyzer.MDSSearchSpaceDivision(entropyZones);
 
     return metricsAnalyzer;
 }
 
-void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_firstGen, int n_children, int optimum, int entropyZones,int R, bool maxProblem, std::string route,int distanceToCenter, int hdVariant, double qthr, std::vector<Domain> domains = nullptr){
+void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_firstGen, int n_children, int optimum, int entropyZones,int R, bool maxProblem, std::string route,int distanceToCenter, int hdVariant, double qthr, std::vector<Domain> domains = std::vector<Domain>(), std::vector<double> customCenter = std::vector<double>()){
     fs::path base_path = fs::current_path() / route;
     if (!fs::exists(base_path)) {
         fs::create_directories(base_path);
@@ -62,16 +47,16 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     std::cout << "objectiveValueOverTime" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
     //plot objectiveValueOverTime
-    std::cout << route + "objectiveValueOverTime.txt";
-    std::ofstream file1(route + "objectiveValueOverTime.txt");
-    std::vector<double> objectiveValueOverTimeVector = metricsAnalyzer.objectiveValueOverTime();
+    std::cout << route + "ConvGraph_P.txt";
+    std::ofstream file1(route + "ConvGraph_P.txt");
+    std::vector<double> objectiveValueOverTimeVector = metricsAnalyzer.ConvGraph();
     if (file1.is_open()) {
         for (size_t i = 0; i < objectiveValueOverTimeVector.size(); ++i) {
             file1 << i << " " << objectiveValueOverTimeVector[i] << std::endl;
         }
         file1.close();
     } else {
-        std::cerr << "Failed to open data file: " << "objectiveValueOverTime.txt" << std::endl;
+        std::cerr << "Failed to open data file: " << "ConvGraph_P.txt" << std::endl;
     }
     auto metric_end = std::chrono::high_resolution_clock::now();
     double metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
@@ -80,36 +65,51 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     std::cout << "objectiveValueBestSolutionOverTime" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
     //plot objectiveValueBestSolutionOverTime
-    std::ofstream file13(route + "objectiveValueBestSolutionOverTime.txt");
-    std::vector<double> objectiveValueBestSolutionOverTimeVector = metricsAnalyzer.objectiveValueBestSolutionOverTime();
+    std::ofstream file13(route + "CurrentB_P.txt");
+    std::vector<double> objectiveValueBestSolutionOverTimeVector = metricsAnalyzer.CurrentB();
     if (file13.is_open()) {
         for (size_t i = 0; i < objectiveValueBestSolutionOverTimeVector.size(); ++i) {
             file13 << i << " " << objectiveValueBestSolutionOverTimeVector[i] << std::endl;
         }
         file13.close();
     } else {
-        std::cerr << "Failed to open data file: " << "objectiveValueBestSolutionOverTime.txt" << std::endl;
+        std::cerr << "Failed to open data file: " << "CurrentB_P.txt" << std::endl;
     }
     metric_end = std::chrono::high_resolution_clock::now();
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
     timing_file << "objectiveValueBestSolutionOverTime " << metric_duration << std::endl;
 
-    std::cout << "changeInObjectiveValuePerGeneration" << std::endl;
+    std::cout << "improvementInObjectiveValuePerGeneration" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
-    //plot ChangeInObjectiveValuePerGeneration
-    std::ofstream file2(route + "changeInObjectiveValuePerGeneration.txt");
-    std::vector<double> changeInObjectiveValuePerGenerationVector = metricsAnalyzer.changeInObjectiveValuePerGeneration();
-    if (file2.is_open()) {
-        for (size_t i = 0; i < changeInObjectiveValuePerGenerationVector.size(); ++i) {
-            file2 << i << " " << changeInObjectiveValuePerGenerationVector[i] << std::endl;
+    std::ofstream fileImp(route + "DistImp_P.txt");
+    std::vector<double> improvementVector = metricsAnalyzer.DistImp(maxProblem);
+    if (fileImp.is_open()) {
+        for (size_t i = 0; i < improvementVector.size(); ++i) {
+            fileImp << i << " " << improvementVector[i] << std::endl;
         }
-        file2.close();
+        fileImp.close();
     } else {
-        std::cerr << "Failed to open data file: " << "changeInObjectiveValuePerGeneration.txt" << std::endl;
+        std::cerr << "Failed to open data file: DistImp_P.txt" << std::endl;
     }
     metric_end = std::chrono::high_resolution_clock::now();
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
-    timing_file << "changeInObjectiveValuePerGeneration " << metric_duration << std::endl;
+    timing_file << "improvementInObjectiveValuePerGeneration " << metric_duration << std::endl;
+
+    std::cout << "deteriorationInObjectiveValuePerGeneration" << std::endl;
+    metric_start = std::chrono::high_resolution_clock::now();
+    std::ofstream fileDet(route + "DistDet_P.txt");
+    std::vector<double> deteriorationVector = metricsAnalyzer.DistDet(maxProblem);
+    if (fileDet.is_open()) {
+        for (size_t i = 0; i < deteriorationVector.size(); ++i) {
+            fileDet << i << " " << deteriorationVector[i] << std::endl;
+        }
+        fileDet.close();
+    } else {
+        std::cerr << "Failed to open data file: DistDet_P.txt" << std::endl;
+    }
+    metric_end = std::chrono::high_resolution_clock::now();
+    metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
+    timing_file << "deteriorationInObjectiveValuePerGeneration " << metric_duration << std::endl;
 
     std::cout << "rateOfChangePerIndividualPerGeneration" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
@@ -134,15 +134,15 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     std::cout << "convergenceOptimumBased" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
     //plot convergenceOptimumBased
-    std::ofstream file4(route + "convergenceOptimumBased.txt");
-    std::vector<double> convergenceOptimumBasedVector = metricsAnalyzer.calculateConvergenceOptimumBased(optimum, maxProblem);
+    std::ofstream file4(route + "ConvRate_P.txt");
+    std::vector<double> convergenceOptimumBasedVector = metricsAnalyzer.ConvRate(optimum, maxProblem);
     if (file4.is_open()) {
         for (size_t i = 0; i < convergenceOptimumBasedVector.size(); ++i) {
             file4 << i << " " << convergenceOptimumBasedVector[i] << std::endl;
         }
         file4.close();
     } else {
-        std::cerr << "Failed to open data file: " << "convergenceOptimumBased.txt" << std::endl;
+        std::cerr << "Failed to open data file: " << "ConvRate_P.txt" << std::endl;
     }
     metric_end = std::chrono::high_resolution_clock::now();
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
@@ -166,21 +166,22 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     timing_file << "classicConvergenceOptimumBased " << metric_duration << std::endl;
 
     // metric_start = std::chrono::high_resolution_clock::now();
-    // std::cout << "relError" << std::endl;
-    // //plot relError
-    // std::ofstream file24(route + "relError.txt");
-    // std::vector<double> relErrorVector = metricsAnalyzer.relError(optimum, maxProblem);
-    // if (file24.is_open()) {
-    //     for (size_t i = 0; i < relErrorVector.size(); ++i) {
-    //         file24 << i << " " << relErrorVector[i] << std::endl;
-    //     }
-    //     file24.close();
-    // } else {
-    //     std::cerr << "Failed to open data file: " << "relError.txt" << std::endl;
-    // }
-    // metric_end = std::chrono::high_resolution_clock::now();
-    // metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
-    // timing_file << "relError " << metric_duration << std::endl;
+    std::cout << "relError" << std::endl;
+    metric_start = std::chrono::high_resolution_clock::now();
+    //plot relError
+    std::ofstream file24(route + "RelError_P.txt");
+    std::vector<double> relErrorVector = metricsAnalyzer.RelError(optimum, maxProblem);
+    if (file24.is_open()) {
+        for (size_t i = 0; i < relErrorVector.size(); ++i) {
+            file24 << i << " " << relErrorVector[i] << std::endl;
+        }
+        file24.close();
+    } else {
+        std::cerr << "Failed to open data file: " << "RelError_P.txt" << std::endl;
+    }
+    metric_end = std::chrono::high_resolution_clock::now();
+    metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
+    timing_file << "relError " << metric_duration << std::endl;
 
     std::cout << "convergenceStepsPerIndividual" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
@@ -206,7 +207,7 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     metric_start = std::chrono::high_resolution_clock::now();
     //plot convergenceSteps
     std::ofstream file17(route + "convergenceSteps2.txt");
-    std::vector<double> convergenceStepsVector2 = metricsAnalyzer.calculateConvergenceSteps();
+    std::vector<double> convergenceStepsVector2 = metricsAnalyzer.calculateConvergenceSteps(maxProblem);
     if (file17.is_open()) {
         for (size_t i = 0; i < convergenceStepsVector2.size(); ++i) {
             file17 << i << " " << convergenceStepsVector2[i] << std::endl;
@@ -222,8 +223,8 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     std::cout << "geometricRateofFitnessChangePerGeneration" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
     //plot geometricRateofFitnessChangePerGeneration
-    std::ofstream file6(route + "geometricRateofFitnessChangePerGeneration.txt");
-    std::vector<double> geometricRateofFitnessChangePerGenerationVector = metricsAnalyzer.geometricRateofFitnessChangePerGeneration(optimum, n_firstGen, n_children);
+    std::ofstream file6(route + "GeoConvRate_P.txt");
+    std::vector<double> geometricRateofFitnessChangePerGenerationVector = metricsAnalyzer.GeoConvRate(optimum, n_firstGen, n_children);
     if (file6.is_open()) {
         for (size_t i = 0; i < geometricRateofFitnessChangePerGenerationVector.size(); ++i) {
             if (i == 0){
@@ -234,7 +235,7 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
         }
         file6.close();
     } else {
-        std::cerr << "Failed to open data file: " << "geometricRateofFitnessChangePerGeneration.txt" << std::endl;
+        std::cerr << "Failed to open data file: " << "GeoConvRate_P.txt" << std::endl;
     }
     metric_end = std::chrono::high_resolution_clock::now();
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
@@ -243,10 +244,10 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     std::cout << "e_value" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
     //plot e_value
-    std::ofstream file15(route + "e_value.txt");
+    std::ofstream file15(route + "EValue_P.txt");
     double n_convergence = metricsAnalyzer.calculate_n_convergence();
     double n_quality = metricsAnalyzer.calculate_n_quality(optimum, qthr);
-    double eValue = metricsAnalyzer.e_value(n_quality, n_convergence);
+    double eValue = metricsAnalyzer.EValue(n_quality, n_convergence);
     std::cout << "eValue: " << eValue << std::endl;
     if (file15.is_open()) {
         file15 << n_quality << std::endl;
@@ -254,7 +255,7 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
         file15 << eValue << std::endl;
         file15.close();
     } else {
-        std::cerr << "Failed to open data file: " << "e_value.txt" << std::endl;
+        std::cerr << "Failed to open data file: " << "EValue_P.txt" << std::endl;
     }
     metric_end = std::chrono::high_resolution_clock::now();
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
@@ -265,20 +266,20 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     //plot hammingDistance based on hdVariant parameter
     std::vector<double> hammingVector;
     if (hdVariant == 0)
-        hammingVector = metricsAnalyzer.hammingDistanceBestSolutionPerGeneration(HammingDistanceType::GLOBAL_BEST);
+        hammingVector = metricsAnalyzer.HamDist(HammingDistanceType::GLOBAL_BEST, maxProblem);
     else if (hdVariant == 1)
-        hammingVector = metricsAnalyzer.hammingDistanceBestSolutionPerGeneration2(HammingDistanceType::FIRST_GEN_BEST);
+        hammingVector = metricsAnalyzer.HamDist(HammingDistanceType::FIRST_GEN_BEST, maxProblem);
     else
-        hammingVector = metricsAnalyzer.hammingDistanceBestSolutionPerGeneration3(HammingDistanceType::PREVIOUS_GEN_BEST);
+        hammingVector = metricsAnalyzer.HamDist(HammingDistanceType::PREVIOUS_GEN_BEST, maxProblem);
 
-    std::ofstream fileHD(route + "hammingDistance.txt");
+    std::ofstream fileHD(route + "HamDist_P.txt");
     if (fileHD.is_open()) {
         for (size_t i = 0; i < hammingVector.size(); ++i) {
             fileHD << i << " " << hammingVector[i] << std::endl;
         }
         fileHD.close();
     } else {
-        std::cerr << "Failed to open data file: " << "hammingDistance.txt" << std::endl;
+        std::cerr << "Failed to open data file: " << "HamDist_P.txt" << std::endl;
     }
     metric_end = std::chrono::high_resolution_clock::now();
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
@@ -287,15 +288,15 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     std::cout << "entropyDiversity" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
     //plot entropy diversity for each generation
-    std::ofstream file7(route + "entropyDiversity.txt");
-    std::vector<double> areaScoresVector = metricsAnalyzer.entropyDiversityCustomAreas(entropyZones);
+    std::ofstream file7(route + "EntropyDiv_P.txt");
+    std::vector<double> areaScoresVector = metricsAnalyzer.EntropyDiv(entropyZones);
     if (file7.is_open()) {
         for (size_t i = 0; i < areaScoresVector.size(); ++i) {
             file7 << i << " " << areaScoresVector[i] << std::endl;
         }
         file7.close();
     } else {
-        std::cerr << "Failed to open data file: " << "entropyDiversity.txt" << std::endl;
+        std::cerr << "Failed to open data file: " << "EntropyDiv_P.txt" << std::endl;
     }
     metric_end = std::chrono::high_resolution_clock::now();
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
@@ -307,11 +308,11 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     std::ofstream file21(route + "diversityDistanceToCenter.txt");
     std::vector<std::vector<double>> diversityDistanceToCenterVector;
     if (distanceToCenter == 0) {
-        diversityDistanceToCenterVector = metricsAnalyzer.diversityDistanceToCenterZeroCenter(R);
+        diversityDistanceToCenterVector = metricsAnalyzer.diversityDistanceToCenter(R, DiversityCenterType::ZERO_CENTER, std::vector<double>(), domains, maxProblem);
     } else if (distanceToCenter == 1) {
-        diversityDistanceToCenterVector = metricsAnalyzer.diversityDistanceToCenterBestIndividual(R, DiversityCenterType::BEST_INDIVIDUAL_CENTER);
+        diversityDistanceToCenterVector = metricsAnalyzer.diversityDistanceToCenter(R, DiversityCenterType::BEST_INDIVIDUAL_CENTER, std::vector<double>(), domains, maxProblem);
     } else {
-        diversityDistanceToCenterVector = metricsAnalyzer.diversityDistanceToCenterCustom(R, DiversityCenterType::CUSTOM_CENTER, variableRanges = domains);
+        diversityDistanceToCenterVector = metricsAnalyzer.diversityDistanceToCenter(R, DiversityCenterType::CUSTOM_CENTER, customCenter, domains, maxProblem);
     }
     
     if (file21.is_open()) {
@@ -332,15 +333,15 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     std::cout << "accumSum" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
     //plot accumSum
-    std::ofstream file23(route + "accumSum.txt");
-    std::vector<double> accumSumVector = metricsAnalyzer.accumSum(maxProblem);
+    std::ofstream file23(route + "ASID_P.txt");
+    std::vector<double> accumSumVector = metricsAnalyzer.ASID(maxProblem);
     if (file23.is_open()) {
         for (size_t i = 0; i < accumSumVector.size(); ++i) {
             file23 << i << " " << accumSumVector[i] << std::endl;
         }
         file23.close();
     } else {
-        std::cerr << "Failed to open data file: " << "accumSum.txt" << std::endl;
+        std::cerr << "Failed to open data file: " << "ASID_P.txt" << std::endl;
     }
     metric_end = std::chrono::high_resolution_clock::now();
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
@@ -505,7 +506,34 @@ std::map<std::string, std::string> readConfig(const std::string& filename) {
     return config;
 }
 
-std::vector<Domain_T> generarDominios(const std::string& archivo, int numVars) {
+std::vector<Domain> generarDominios(const std::string& archivo, int numVars) {
+    std::vector<Domain> dominios(numVars, {0, 0});
+    std::ifstream file(archivo);
+    std::string linea;
+    bool todos = false;
+
+    while (std::getline(file, linea)) {
+        std::istringstream iss(linea);
+        std::string nombre;
+        double minimo, maximo;
+        if (iss >> nombre >> minimo >> maximo) {
+            if (nombre == "all") {
+                for (int i = 0; i < numVars; ++i) {
+                    dominios[i] = {minimo, maximo};
+                }
+                todos = true;
+            } else if (!todos && nombre[0] == 'x') {
+                int idx = std::stoi(nombre.substr(1)) - 1;
+                if (idx >= 0 && idx < numVars) {
+                    dominios[idx] = {minimo, maximo};
+                }
+            }
+        }
+    }
+    return dominios;
+}
+
+std::vector<Domain_T> generarDominiosT(const std::string& archivo, int numVars) {
     std::vector<Domain_T> dominios(numVars, {0, 0});
     std::ifstream file(archivo);
     std::string linea;
@@ -555,9 +583,36 @@ int main(int argc, char **argv) {
         int optimum = std::stoi(config["optimum"]);
         int n_var = std::stoi(config["n_var"]);
         int mu = std::stoi(config["mu"]);
-        int entropyZones = std::stoi(config["entropy_zones"]);
-        int R = std::stoi(config["R"]);
         std::string problemName = config["problem_name"];
+        // Default entropyZones
+        int entropyZones;
+        if (config.find("entropy_zones") != config.end() && !config["entropy_zones"].empty()) {
+            entropyZones = std::stoi(config["entropy_zones"]);
+        } else {
+            entropyZones = static_cast<int>(std::ceil(std::log(n_var)));
+        }
+
+        // Default R
+        int R;
+        if (config.find("R") != config.end() && !config["R"].empty()) {
+            R = std::stoi(config["R"]);
+        } else {
+            R = static_cast<int>(std::ceil(std::sqrt(n_var)));
+        }
+
+        // Custom center
+        std::vector<double> customCenter;
+        if (config.find("distance_center") != config.end() && !config["distance_center"].empty()) {
+            std::string centerStr = config["distance_center"];
+            std::istringstream iss(centerStr);
+            std::string val;
+            while (std::getline(iss, val, ',')) {
+                customCenter.push_back(std::stod(val));
+            }
+        } else {
+            customCenter = std::vector<double>(n_var, 0.0);
+        }
+
         int distanceToCenter = std::stoi(config["distance_to_center"]);
         int hdVariant = std::stoi(config["hd_variant"]);
         double qthr = std::stod(config["qthr"]);
@@ -578,12 +633,13 @@ int main(int argc, char **argv) {
         int n_children = mu;
 
         ioh::common::MetricsAnalyzer metricsAnalyzer(n_var, n_firstGen, n_children, maxProblem);
-        
+
         bool customDomain = false;
+        std::vector<Domain> domains;
         if (config.find("distanceToCenter") != config.end()) {
             customDomain = (config["distanceToCenter"] == "2");
         }
-        
+
         if (customDomain) {
             if (config.find("domainFile") == config.end() || config["domainFile"].empty()) {
                 std::cerr << "Error: customDomain is true but domainFile is not specified in config" << std::endl;
@@ -591,7 +647,7 @@ int main(int argc, char **argv) {
             }
             std::string domainFile = config["domainFile"];
             std::cout << "Loading custom domains from: " << domainFile << std::endl;
-            std::vector<Domain_T> domains = generarDominios(domainFile, n_var);
+            domains = generarDominios(domainFile, n_var);
             std::cout << "Custom domains loaded successfully" << std::endl;
         }
         
@@ -599,7 +655,7 @@ int main(int argc, char **argv) {
         
         if (customDomain){
             createFilesForPlots(metricsAnalyzer, n_firstGen, n_children, optimum, entropyZones,
-                            R, maxProblem, route, distanceToCenter, hdVariant, qthr, domains);
+                            R, maxProblem, route, distanceToCenter, hdVariant, qthr, domains, customCenter);
         }else{
             createFilesForPlots(metricsAnalyzer, n_firstGen, n_children, optimum, entropyZones,
                             R, maxProblem, route, distanceToCenter, hdVariant, qthr);
@@ -624,7 +680,7 @@ int main(int argc, char **argv) {
         std::vector<Domain_T> domains = {};
         if (customDomain) {
             std::string domainFile = config["domainFile"];
-            domains = generarDominios(domainFile, n);
+            domains = generarDominiosT(domainFile, n);
         }
 
         route = path + "/";
