@@ -1,4 +1,4 @@
-#include "metrics/metrics.hpp"
+#include "metrics/PopMetrics.hpp"
 #include "metrics/efficiency.hpp"
 #include "metrics/effectiveness.hpp"
 #include "reader_logger/read_logger.hpp"
@@ -665,7 +665,8 @@ int main(int argc, char **argv) {
     else if (isTrajectoryBased) {
         std::cout << "Using trayectorialMetrics class" << std::endl;
         
-        std::string path = config["path"];
+        std::string problemFile = config["problem_file"];
+        std::string problemName = config["problem_name"];
         int n = std::stoi(config["n_var"]);
         int hammingDistanceVariant = std::stoi(config["hd_variant"]);
         HammingDistanceVariantEnum hammingDistanceVariantEnum = static_cast<HammingDistanceVariantEnum>(hammingDistanceVariant);
@@ -683,9 +684,16 @@ int main(int argc, char **argv) {
             domains = generarDominiosT(domainFile, n);
         }
 
-        route = path + "/";
+        if (config.find("path") != config.end() && !config["path"].empty()) {
+            route = config["path"];
+            if (route.back() != '/') {
+                route += '/';
+            }
+        } else {
+            route = problemName + "/" + std::to_string(n);
+        }
 
-        outputMetrics(path, n, R, qthr, entropySize, domains, hammingDistanceVariantEnum, maxProblem);
+        outputMetrics(problemFile, route, n, R, qthr, entropySize, domains, hammingDistanceVariantEnum, maxProblem);
 
         typeOfAnalyzer = "trayectorialMetrics";
     }

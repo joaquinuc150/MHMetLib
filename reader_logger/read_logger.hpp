@@ -4,7 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <filesystem>
-#include "../models/InfoRuntime.hpp"
+#include "../metrics/TrajMetrics.hpp"
 #include "../models/InfoProblem.hpp"
 
 std::vector<RuntimeInfo> readLogger(const std::string& filePath, bool maximize = true, std::vector<Domain_T> domains = std::vector<Domain_T>(), double threshold = 0.0) {

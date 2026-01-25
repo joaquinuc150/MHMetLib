@@ -84,11 +84,11 @@ class RuntimeInfo {
             return fevals.size();
         }
 
-        std::vector<double> getFevals() {
+        std::vector<double> ConvGraph_T() {
             return fevals;
         }
 
-        std::vector<double> getFevalsBest() {
+        std::vector<double> CurrentB_T() {
             std::vector<double> fevals_best;
             for (int i = 0; i < fevals.size(); i++) {
                 if (maximize)
@@ -174,7 +174,7 @@ class RuntimeInfo {
             return no_change_vector;
         }
 
-        std::vector<double> getOperatorRate() {
+        std::vector<double> OperatorRate_T() {
             size_t attempts = fevals.size() - 1;
             size_t improvementAttempts = getImprovement().size();
             size_t worseningAttempts = getWorsening().size();
@@ -188,7 +188,7 @@ class RuntimeInfo {
             return operator_rate_vector;
         }
 
-        std::vector<std::vector<double>> getSumativeIntensify() {
+        std::vector<std::vector<double>> ASID_T() {
             std::vector<std::vector<double>> sumative_intensify;
             double sum = 0;
             for (int i = 0; i < intensify_vector.size(); i++) {
@@ -202,7 +202,7 @@ class RuntimeInfo {
             return sumative_intensify;
         }
 
-        std::vector<double> getAccumulatedIntensify() {
+        std::vector<double> AccumulatedIntensify_T() {
             std::vector<double> accumulated_intensify;
             double sum = 0;
             for (int i = 0; i < intensify_vector.size(); i++) {
@@ -390,7 +390,7 @@ class RuntimeInfo {
             return (double) success / fevals.size();
         }
 
-        double nQuality() {
+        double nQuality_T() {
             int success = 0;
             for (int i = 1; i < fevals.size(); i++) {
                 if (maximize ? fevals[i] > threshold : fevals[i] < threshold) {
@@ -400,12 +400,12 @@ class RuntimeInfo {
             return (double) success / fevals.size();
         }
 
-        double nConvergence() {
+        double nConvergence_T() {
             return (double) x.size() / nCr(x[0].size(), 2);
         }
 
-        double getEValue() {
-            return nQuality() / nConvergence();
+        double getEValue_T() {
+            return nQuality_T() / nConvergence_T();
         }
 
         void createXMatrixPerEvaluation(){
@@ -533,7 +533,7 @@ class RuntimeInfo {
             }
         }
         
-	std::vector<double> entropyDiversityCustomAreas(int n_areas){
+	std::vector<double> EntropyDiv_T(int n_areas){
 	    std::vector<double> areaScoresVector;
 	    const int windowSize = 10;
 	    

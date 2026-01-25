@@ -7,20 +7,20 @@
 enum HammingDistanceVariantEnum { FromZero, BetweenSolutions, FromLocalBest };
 enum DistanceToCenterVariantEnum { EmptySolution, BestSolution, Custom };
 
-void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size_t n, int R, int entropySize, HammingDistanceVariantEnum hdVariant, bool maxProblem) {
+void createFileOutput(std::string filePath, std::string outputPath, std::vector<RuntimeInfo>& data, size_t n, int R, int entropySize, HammingDistanceVariantEnum hdVariant, bool maxProblem) {
     std::vector<double> p = {};
     for (int i = 0; i < data.size(); i++) {
-        std::string filePathOutput = filePath + "_Run_" + std::to_string(i + 1) + "/";
+        std::string filePathOutput = outputPath;
 
         std::cerr << "Writing to Run " + std::to_string(i + 1) << std::endl;
 
         auto start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "ConvGraph_T", data[i].getFevals());
+        output_file_vector(filePathOutput, "ConvGraph_T", data[i].ConvGraph_T());
         auto end = std::chrono::high_resolution_clock::now();
         std::cout << "ConvGraph_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "CurrentB_T", data[i].getFevalsBest());
+        output_file_vector(filePathOutput, "CurrentB_T", data[i].CurrentB_T());
         end = std::chrono::high_resolution_clock::now();
         std::cout << "CurrentB_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
@@ -40,24 +40,24 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         std::cout << "calculateIntensify: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_matrix(filePathOutput, "ASID_T", data[i].getSumativeIntensify());
+        output_file_matrix(filePathOutput, "ASID_T", data[i].ASID_T());
         end = std::chrono::high_resolution_clock::now();
         std::cout << "ASID_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "AccumulatedIntensify_T", data[i].getAccumulatedIntensify());
+        output_file_vector(filePathOutput, "AccumulatedIntensify_T", data[i].AccumulatedIntensify_T());
         end = std::chrono::high_resolution_clock::now();
         std::cout << "AccumulatedIntensify_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "OperatorRate_T", data[i].getOperatorRate());
+        output_file_vector(filePathOutput, "OperatorRate_T", data[i].OperatorRate_T());
         end = std::chrono::high_resolution_clock::now();
         std::cout << "OperatorRate_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "EntropyWithSphere", data[i].getEntropyWithSphere());
+        output_file_vector(filePathOutput, "SDistance_T", data[i].getEntropyWithSphere());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "EntropyWithSphere: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "SDistance_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
         output_file_vector(filePathOutput, "SpheresAreas", data[i].getSpheresAreasForIteration(R, p));
@@ -123,9 +123,9 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
 
         std::cout << "e_value" << std::endl;
         start = std::chrono::high_resolution_clock::now();
-        double n_quality = data[i].nQuality();
-        double n_convergence = data[i].nConvergence();
-        double eValue = data[i].getEValue();
+        double n_quality = data[i].nQuality_T();
+        double n_convergence = data[i].nConvergence_T();
+        double eValue = data[i].getEValue_T();
         end = std::chrono::high_resolution_clock::now();
         std::cout << "nQuality, nConvergence, eValue: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
         vector<double> eValueVector = {n_quality, n_convergence, eValue};
@@ -152,21 +152,21 @@ void createFileOutput(std::string filePath, std::vector<RuntimeInfo>& data, size
         std::cout << "MDSSearchSpaceDivisionCustomSectors: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "EntropyDiv_T", data[i].entropyDiversityCustomAreas(entropySize));
+        output_file_vector(filePathOutput, "EntropyDiv_T", data[i].EntropyDiv_T(entropySize));
         end = std::chrono::high_resolution_clock::now();
         std::cout << "EntropyDiv_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
     }
 }
 
-void outputMetrics(std::string path, int n, int R, double threshold, int entropySize, std::vector<Domain_T> domains = std::vector<Domain_T>(), HammingDistanceVariantEnum hdVariant = HammingDistanceVariantEnum::FromZero, bool maxProblem = true) {
-    std::cerr << "Reading logger data from " << path << std::endl;
-    std::string fileName = path.substr(0, path.find_first_of("/")) + "-" + path.substr(path.find_last_of("/") + 1, path.find_last_of(".") - path.find_last_of("/") - 1);
+void outputMetrics(std::string problemFile, std::string path, int n, int R, double threshold, int entropySize, std::vector<Domain_T> domains = std::vector<Domain_T>(), HammingDistanceVariantEnum hdVariant = HammingDistanceVariantEnum::FromZero, bool maxProblem = true) {
+    std::cerr << "Reading logger data from " << problemFile << std::endl;
+    std::string fileName = problemFile.substr(0, problemFile.find_first_of("/")) + "-" + problemFile.substr(problemFile.find_last_of("/") + 1, problemFile.find_last_of(".") - problemFile.find_last_of("/") - 1);
 
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<RuntimeInfo> data = readLogger(path, maxProblem, domains, threshold);
+    std::vector<RuntimeInfo> data = readLogger(problemFile, maxProblem, domains, threshold);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "readLogger: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
     std::cerr << "Creating file output with base name " << fileName << std::endl;
-    createFileOutput(fileName, data, n, R, entropySize, hdVariant, maxProblem);
+    createFileOutput(fileName, path, data, n, R, entropySize, hdVariant, maxProblem);
 }
