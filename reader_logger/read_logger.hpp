@@ -5,7 +5,6 @@
 #include <vector>
 #include <filesystem>
 #include "../metrics/TrajMetrics.hpp"
-#include "../models/InfoProblem.hpp"
 
 std::vector<RuntimeInfo> readLogger(const std::string& filePath, bool maximize = true, std::vector<Domain_T> domains = std::vector<Domain_T>(), double threshold = 0.0) {
     std::vector<RuntimeInfo> data;
@@ -51,33 +50,6 @@ std::vector<RuntimeInfo> readLogger(const std::string& filePath, bool maximize =
     file.close();
 
     return data;
-}
-
-InfoProblem readFolder(const std::string& folderPath) {    
-    InfoProblem problem;
-    string nameProblem = folderPath.substr(folderPath.find_last_of("_") + 1);
-    problem.setName(nameProblem);
-    for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
-        std::string path = entry.path();
-        unsigned dimension = std::stoi(path.substr(path.find_last_of("_") + 4, path.find_last_of(".") - path.find_last_of("_") - 4));
-        std::vector<RuntimeInfo> data = readLogger(path);
-        problem.addRun(dimension, data);
-    }
-
-    return problem;
-}
-
-std::vector<InfoProblem> readSuite(const std::string& folderPath) {
-    std::vector<InfoProblem> problems;
-    for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
-        if (entry.is_directory()) {
-            std::string path = entry.path();
-            InfoProblem problem = readFolder(path);
-            problems.push_back(problem);
-        }
-    }
-
-    return problems;
 }
 
 void removeLogs(const std::string& folderPath) {

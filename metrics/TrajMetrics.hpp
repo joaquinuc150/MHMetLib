@@ -9,6 +9,9 @@
 #include <eigen/Eigen/Dense>
 #include <cfloat>
 
+enum class HammingDistanceVariantEnum { FROM_ZERO, BETWEEN_SOLUTIONS, GLOBAL_BEST };
+enum class DistanceToCenterVariantEnum { EMPTY_SOLUTION, BEST_SOLUTION, CUSTOM };
+
 struct Domain_T {
     double min;
     double max;
@@ -21,6 +24,7 @@ class RuntimeInfo {
         std::vector<std::vector<double>> x; // xVectorsPerEvaluation
         std::vector<Domain_T> domains;
         double f_best;
+        std::vector<double> x_best;
         bool maximize = true;
 
         // Metrics for search space division
@@ -109,7 +113,17 @@ class RuntimeInfo {
 
         double getfBest() {
             f_best = maximize ? *std::max_element(fevals.begin(), fevals.end()) : *std::min_element(fevals.begin(), fevals.end());
+            setXBest();
             return f_best;
+        }
+
+        void setXBest() {
+            for (int i = 0; i < fevals.size(); i++) {
+                if (fevals[i] == f_best) {
+                    x_best = x[i];
+                    break;
+                }
+            }
         }
 
         void print() {
@@ -140,7 +154,7 @@ class RuntimeInfo {
             return true;
         }
 
-        std::vector<double> getImprovement() {
+        std::vector<double> DistImp_T() {
             std::vector<double> improvement_vector;
             for (int i = 1; i < fevals.size(); i++) {
                 if(maximize && fevals[i] > fevals[i-1]) {
@@ -152,7 +166,7 @@ class RuntimeInfo {
             return improvement_vector;
         }
 
-        std::vector<double> getWorsening() {
+        std::vector<double> DistDet_T() {
             std::vector<double> worsening_vector;
             for (int i = 1; i < fevals.size(); i++) {
                 if(maximize && fevals[i] < fevals[i-1]) {
@@ -176,8 +190,8 @@ class RuntimeInfo {
 
         std::vector<double> OperatorRate_T() {
             size_t attempts = fevals.size() - 1;
-            size_t improvementAttempts = getImprovement().size();
-            size_t worseningAttempts = getWorsening().size();
+            size_t improvementAttempts = DistImp_T().size();
+            size_t worseningAttempts = DistDet_T().size();
             size_t noChangeAttempts = getNoChange().size();
 
             std::vector<double> operator_rate_vector;
@@ -212,7 +226,7 @@ class RuntimeInfo {
             return accumulated_intensify;
         }
 
-        std::vector<double> getEntropyWithSphere() {
+        std::vector<double> SDistance_T() {
             int n = x[0].size();
             int sum;
             std::vector<double> entropy_vector;
@@ -350,6 +364,19 @@ class RuntimeInfo {
             return diversity_vector;
         }
 
+        std::vector<double> HamDist_T(HammingDistanceVariantEnum hd) {
+            switch (hd) {
+                case HammingDistanceVariantEnum::BETWEEN_SOLUTIONS:
+                    return getDistanceHamming();
+                case HammingDistanceVariantEnum::FROM_ZERO:
+                    return getDistanceHammingFromZero();
+                case HammingDistanceVariantEnum::GLOBAL_BEST:
+                    return getDistanceHammingFromGlobalBest();
+                default:
+                    return {};
+            }
+        }
+
         std::vector<double> getDistanceHamming() {
             std::vector<double> distance_hamming_vector;
             for (int i = 1; i < x.size(); i++) {
@@ -366,16 +393,10 @@ class RuntimeInfo {
             return distance_hamming_vector;
         }
 
-        std::vector<double> getDistanceHammingFromLocalBest() {
+        std::vector<double> getDistanceHammingFromGlobalBest() {
             std::vector<double> distance_hamming_vector;
-            vector<double> x_localbest = x[0];
-            double f_localbest = fevals[0];
             for (int i = 0; i < x.size(); i++) {
-                if (f_localbest < fevals[i]) {
-                    x_localbest = x[i];
-                    f_localbest = fevals[i];
-                }
-                distance_hamming_vector.push_back(distance_hamming_normalized(x_localbest, x[i]));
+                distance_hamming_vector.push_back(distance_hamming_normalized(x_best, x[i]));
             }
             return distance_hamming_vector;
         }
