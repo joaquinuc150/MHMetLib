@@ -264,13 +264,8 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     std::cout << "hammingDistance" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
     //plot hammingDistance based on hdVariant parameter
-    std::vector<double> hammingVector;
-    if (hdVariant == 0)
-        hammingVector = metricsAnalyzer.HamDist(HammingDistanceType::GLOBAL_BEST, maxProblem);
-    else if (hdVariant == 1)
-        hammingVector = metricsAnalyzer.HamDist(HammingDistanceType::FIRST_GEN_BEST, maxProblem);
-    else
-        hammingVector = metricsAnalyzer.HamDist(HammingDistanceType::PREVIOUS_GEN_BEST, maxProblem);
+    HammingDistanceType hdType = static_cast<HammingDistanceType>(hdVariant);
+    std::vector<double> hammingVector = metricsAnalyzer.HamDist(hdType, maxProblem);
 
     std::ofstream fileHD(route + "HamDist_P.txt");
     if (fileHD.is_open()) {

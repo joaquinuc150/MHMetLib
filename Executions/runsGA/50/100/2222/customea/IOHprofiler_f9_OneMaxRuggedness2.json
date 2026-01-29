@@ -1,0 +1,16 @@
+{
+	"version": "0.0.0", 
+	"suite": "unknown_suite", 
+	"function_id": 9, 
+	"function_name": "OneMaxRuggedness2", 
+	"maximization": true, 
+	"algorithm": {"name": "CUSTOM EA", "info": "CUSTOM EA"},
+	"attributes": ["evaluations", "raw_y", "raw_y_best", "violation", "penalty", "generation", "totalCrossovers", "totalMutations", "successfulCrossovers", "successfulMutations"],
+	"scenarios": [
+		{"dimension": 100,
+		"path": "data_f9_OneMaxRuggedness2/IOHprofiler_f9_DIM100.dat",
+		"runs": [
+			{"instance": 1, "evals": 1000, "best": {"evals": 952, "y": 83, "x": [1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1]}}
+		]}
+	]
+}

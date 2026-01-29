@@ -1,0 +1,38 @@
+Using trayectorialMetrics class
+Number of arguments provided: 3
+readLogger: 0.127893 s
+Fevals: 0.000410693 s
+FevalsBest: 0.0061991 s
+moveDomainFevals: 1.6199e-05 s
+getfBest: 1.3363e-05 s
+calculateIntensify: 4.4399e-05 s
+SumativeIntensify: 0.000463975 s
+AccumulatedIntensify: 0.000467565 s
+EntropyWithSphere: 0.0108688 s
+SpheresAreas: 0.012663 s
+ConvRate: 0.000361926 s
+ConvRateOpt: 0.000389662 s
+Improvement: 0.000182954 s
+ErrorRate: 0.00039496 s
+GeomRate: 0.00388419 s
+VectorDiversity: 0.789335 s
+DistanceHammingfromZero: 0.00760169 s
+DistanceHamming: 0.0076049 s
+DistanceHammingFromLocalBest: 0.00757454 s
+createXMatrixPerEvaluation: 0.0756979 s
+createDissimilarityMatrix: 6.63625 s
+MDS iteration:
+  1    2    3    4    5    6    7    8    9   10  
+ 11   12   13   14   15   16   17   18   19   20  
+ 21   22   23   24   25   26   27   28   29   30  
+Matrix saved to file "X1.txt"
+MDS3: 11.1262 s
+Divisions per dimension: 3
+Actual sectors: 27
+MDS iteration:
+  1    2    3    4    5    6    7    8    9   10  
+ 11   12   13   14   15   16   17   18   19   20  
+ 21   22   23   24   25   26   27   28   29   30  
+Matrix saved to file "X1.txt"
+MDSSearchSpaceDivisionCustomSectors: 11.3026 s
+EntropyDiversity: 0.00012976 s
