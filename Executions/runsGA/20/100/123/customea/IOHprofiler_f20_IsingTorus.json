@@ -1,0 +1,16 @@
+{
+	"version": "0.0.0", 
+	"suite": "unknown_suite", 
+	"function_id": 20, 
+	"function_name": "IsingTorus", 
+	"maximization": true, 
+	"algorithm": {"name": "CUSTOM EA", "info": "CUSTOM EA"},
+	"attributes": ["evaluations", "raw_y", "raw_y_best", "violation", "penalty", "generation", "totalCrossovers", "totalMutations", "successfulCrossovers", "successfulMutations"],
+	"scenarios": [
+		{"dimension": 100,
+		"path": "data_f20_IsingTorus/IOHprofiler_f20_DIM100.dat",
+		"runs": [
+			{"instance": 1, "evals": 1000, "best": {"evals": 940, "y": 162, "x": [1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1]}}
+		]}
+	]
+}
