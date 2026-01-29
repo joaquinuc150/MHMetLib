@@ -52,6 +52,13 @@ class RuntimeInfo {
             f_best = 0;
         }
 
+        RuntimeInfo(bool maximize, double threshold) : maximize(maximize), threshold(threshold) {
+            fevals = {};
+            time = {};
+            x = {};
+            f_best = 0;
+        }
+
         RuntimeInfo(bool maximize, std::vector<Domain_T> domains) : maximize(maximize), domains(domains) {
             fevals = {};
             time = {};

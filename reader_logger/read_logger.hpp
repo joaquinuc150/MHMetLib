@@ -24,9 +24,9 @@ std::vector<RuntimeInfo> readLogger(const std::string& filePath, bool maximize =
         }
         if(line == header || i == -1) {
             if (domains.size() > 0)
-                data.push_back(RuntimeInfo(maximize, domains));
+                data.push_back(RuntimeInfo(maximize, domains, threshold));
             else
-                data.push_back(RuntimeInfo(maximize));
+                data.push_back(RuntimeInfo(maximize, threshold));
             i++;
         }
         if(line != header){
