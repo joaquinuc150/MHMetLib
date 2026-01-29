@@ -690,7 +690,7 @@ int main(int argc, char **argv) {
 
         outputMetrics(problemFile, route, n, R, qthr, entropySize, domains, hammingDistanceVariantEnum, maxProblem);
 
-        typeOfAnalyzer = "trayectorialMetrics";
+        typeOfAnalyzer = "trayectorialBased";
     }
     else {
         std::cerr << "Error: Unknown config type. Use config_p.cnf or config_t.cnf" << std::endl;

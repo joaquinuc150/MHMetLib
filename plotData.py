@@ -869,5 +869,5 @@ if __name__ == "__main__":
         mainCombined(args.pop_dir, args.traj_dir, args.raw_data)
     else:
         print("Invalid type of analyzer")
-        print("Valid options: populationBased, trayectorial, combined")
+        print("Valid options: populationBased, trayectorialBased, combined")
         exit(1)
