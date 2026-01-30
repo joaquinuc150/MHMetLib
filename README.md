@@ -140,7 +140,17 @@ Output will be generated in `TrajBasedResults/SA_OneMax100/` with metrics files 
 After the main analysis completes, the program automatically calls `plotData.py` to generate visualizations:
 
 ```sh
-python3 plotData.py <output_path> <analyzer_type>
+python3 plotData.py <output_path> <typeOfAnalyzer>
+```
+
+where typeOfAnalyzer can be trayectoryBased, populationBased or combined.
+
+In the case of plot 'combined' algorithms, an example of usage can be:
+
+```sh
+python3 plotData.py combined --pop_dir Examples/GAMetrics/GA_P10_OneMax100v_seed1111
+--traj_dir Examples/TrajBasedResults/SA_OneMax100
+--raw_data Executions/runsGA/10/100/1111/customea/data_f1_OneMax/IOHprofiler_f1_DIM100.dat
 ```
 
 ## License
