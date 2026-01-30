@@ -145,12 +145,12 @@ void createFileOutput(std::string filePath, std::string outputPath, std::vector<
     }
 }
 
-void outputMetrics(std::string problemFile, std::string path, int n, int R, double threshold, int entropySize, std::vector<Domain_T> domains = std::vector<Domain_T>(), HammingDistanceVariantEnum hdVariant = HammingDistanceVariantEnum::FROM_ZERO, bool maxProblem = true) {
+void outputMetrics(std::string problemFile, std::string path, int n, int R, double threshold, int entropySize, std::vector<Domain_T> domains = std::vector<Domain_T>(), HammingDistanceVariantEnum hdVariant = HammingDistanceVariantEnum::FROM_ZERO, bool maxProblem = true, bool hasOptimum = false, double optimum = 0.0 ) {
     std::cerr << "Reading logger data from " << problemFile << std::endl;
     std::string fileName = problemFile.substr(0, problemFile.find_first_of("/")) + "-" + problemFile.substr(problemFile.find_last_of("/") + 1, problemFile.find_last_of(".") - problemFile.find_last_of("/") - 1);
 
     auto start = std::chrono::high_resolution_clock::now();
-    std::vector<RuntimeInfo> data = readLogger(problemFile, maxProblem, domains, threshold);
+    std::vector<RuntimeInfo> data = readLogger(problemFile, maxProblem, domains, threshold, hasOptimum, optimum);
     auto end = std::chrono::high_resolution_clock::now();
     std::cout << "readLogger: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 

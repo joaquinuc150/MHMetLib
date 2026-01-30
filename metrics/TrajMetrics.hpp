@@ -23,6 +23,8 @@ class RuntimeInfo {
         double time;
         std::vector<std::vector<double>> x; // xVectorsPerEvaluation
         std::vector<Domain_T> domains;
+        bool hasOptimum = false;
+        double optimum = 0.0;
         double f_best;
         std::vector<double> x_best;
         bool maximize = true;
@@ -52,7 +54,7 @@ class RuntimeInfo {
             f_best = 0;
         }
 
-        RuntimeInfo(bool maximize, double threshold) : maximize(maximize), threshold(threshold) {
+        RuntimeInfo(bool maximize, double threshold, bool hasOptimum, double optimum) : maximize(maximize), threshold(threshold), hasOptimum(hasOptimum), optimum(optimum) {
             fevals = {};
             time = {};
             x = {};
@@ -66,7 +68,7 @@ class RuntimeInfo {
             f_best = 0;
         }
 
-        RuntimeInfo(bool maximize, std::vector<Domain_T> domains, double threshold) : maximize(maximize), domains(domains), threshold(threshold) {
+        RuntimeInfo(bool maximize, std::vector<Domain_T> domains, double threshold, bool hasOptimum, double optimum) : maximize(maximize), domains(domains), threshold(threshold), hasOptimum(hasOptimum), optimum(optimum) {
             fevals = {};
             time = {};
             x = {};
@@ -121,6 +123,10 @@ class RuntimeInfo {
         double getfBest() {
             f_best = maximize ? *std::max_element(fevals.begin(), fevals.end()) : *std::min_element(fevals.begin(), fevals.end());
             setXBest();
+
+            if (!hasOptimum) {
+                optimum = f_best;
+            }
             return f_best;
         }
 
@@ -321,7 +327,7 @@ class RuntimeInfo {
         std::vector<double> getConvRateOpt() {
             std::vector<double> conv_rate_vector;
             for (int i = 1; i < fevals.size() - 1; i++) {
-                conv_rate_vector.push_back(conv_rate_opt(fevals[i], f_best, fevals[i-1]));
+                conv_rate_vector.push_back(conv_rate_opt(fevals[i], optimum, fevals[i-1]));
             }
             return conv_rate_vector;
         }
@@ -332,13 +338,13 @@ class RuntimeInfo {
                 f_average += f_i;
             }
             f_average /= fevals.size(); 
-            return avg_conv_rate(f_average, f_best);
+            return avg_conv_rate(f_average, optimum);
         }
 
         std::vector<double> getErrorRate() {
             std::vector<double> error_rate_vector;
             for (int i = 0; i < fevals.size(); i++) {
-                error_rate_vector.push_back(error_rate(fevals[i], f_best));
+                error_rate_vector.push_back(error_rate(fevals[i], optimum));
             }
             return error_rate_vector;
         }
@@ -354,7 +360,7 @@ class RuntimeInfo {
         std::vector<double> getGeomRate() {
             std::vector<double> geom_rate_vector;
             for (int i = 1; i < fevals.size(); i++) {
-                geom_rate_vector.push_back(geom_rate(f_best, fevals[i], fevals[0], i));
+                geom_rate_vector.push_back(geom_rate(optimum, fevals[i], fevals[0], i));
             }
             return geom_rate_vector;
         }

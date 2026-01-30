@@ -566,10 +566,10 @@ int main(int argc, char **argv) {
     std::string config_file = argv[1];
     auto config = readConfig(config_file);
 
-    bool isPopulationBased = (config_file.find("config_p") != std::string::npos);
-    bool isTrajectoryBased = (config_file.find("config_t") != std::string::npos);
+    string typeOfAnalyzer = config["typeOfAnalyzer"];
 
-    string typeOfAnalyzer = "";
+    bool isPopulationBased = (typeOfAnalyzer == "populationBased");
+    bool isTrajectoryBased = (typeOfAnalyzer == "trajectoryBased");
 
     if (isPopulationBased) {
         std::cout << "Using metricsAnalyzer class" << std::endl;
@@ -659,7 +659,8 @@ int main(int argc, char **argv) {
     }
     else if (isTrajectoryBased) {
         std::cout << "Using trayectorialMetrics class" << std::endl;
-        
+        bool hasOptimum = (config.find("optimum") != config.end() && !config["optimum"].empty());
+        double optimum = 0.0;
         std::string problemFile = config["problem_file"];
         std::string problemName = config["problem_name"];
         int n = std::stoi(config["n_var"]);
@@ -669,14 +670,30 @@ int main(int argc, char **argv) {
         DistanceToCenterVariantEnum distanceToCenterVariantEnum = static_cast<DistanceToCenterVariantEnum>(distanceToCenterVariant);
         bool maxProblem = (config["maxProblem"] == "true");
         bool customDomain = (config["customDomain"] == "true");
-        int R = std::stoi(config["R"]);
-        int entropySize = std::stoi(config["entropy_zones"]);
+        int entropyZones;
+        if (config.find("entropy_zones") != config.end() && !config["entropy_zones"].empty()) {
+            entropyZones = std::stoi(config["entropy_zones"]);
+        } else {
+            entropyZones = static_cast<int>(std::ceil(std::log(n)));
+        }
+
+        // Default R
+        int R;
+        if (config.find("R") != config.end() && !config["R"].empty()) {
+            R = std::stoi(config["R"]);
+        } else {
+            R = static_cast<int>(std::ceil(std::sqrt(n)));
+        }
         double qthr = std::stod(config["qthr"]);
 
         std::vector<Domain_T> domains = {};
         if (customDomain) {
             std::string domainFile = config["domainFile"];
             domains = generarDominiosT(domainFile, n);
+        }
+
+        if (hasOptimum) {
+            optimum = std::stod(config["optimum"]);
         }
 
         if (config.find("path") != config.end() && !config["path"].empty()) {
@@ -688,12 +705,12 @@ int main(int argc, char **argv) {
             route = problemName + "/" + std::to_string(n);
         }
 
-        outputMetrics(problemFile, route, n, R, qthr, entropySize, domains, hammingDistanceVariantEnum, maxProblem);
+        outputMetrics(problemFile, route, n, R, qthr, entropyZones, domains, hammingDistanceVariantEnum, maxProblem, hasOptimum, optimum);
 
         typeOfAnalyzer = "trayectorialBased";
     }
     else {
-        std::cerr << "Error: Unknown config type. Use config_p.cnf or config_t.cnf" << std::endl;
+        std::cerr << "Error: Unknown typeOfAnalyzer, only valid options are 'populationBased' or 'trajectoryBased'" << std::endl;
         return 1;
     }
 

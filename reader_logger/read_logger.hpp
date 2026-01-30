@@ -6,7 +6,7 @@
 #include <filesystem>
 #include "../metrics/TrajMetrics.hpp"
 
-std::vector<RuntimeInfo> readLogger(const std::string& filePath, bool maximize = true, std::vector<Domain_T> domains = std::vector<Domain_T>(), double threshold = 0.0) {
+std::vector<RuntimeInfo> readLogger(const std::string& filePath, bool maximize = true, std::vector<Domain_T> domains = std::vector<Domain_T>(), double threshold = 0.0, bool hasOptimum = false, double optimum = 0.0) {
     std::vector<RuntimeInfo> data;
     std::ifstream file(filePath);
     if (!file.is_open()) {
@@ -24,9 +24,9 @@ std::vector<RuntimeInfo> readLogger(const std::string& filePath, bool maximize =
         }
         if(line == header || i == -1) {
             if (domains.size() > 0)
-                data.push_back(RuntimeInfo(maximize, domains, threshold));
+                data.push_back(RuntimeInfo(maximize, domains, threshold, hasOptimum, optimum));
             else
-                data.push_back(RuntimeInfo(maximize, threshold));
+                data.push_back(RuntimeInfo(maximize, threshold, hasOptimum, optimum));
             i++;
         }
         if(line != header){
