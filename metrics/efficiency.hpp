@@ -47,9 +47,19 @@ double error_rate_without_best(const double f_i, const double f_iplusone) {
     return difference_absolute(f_i, f_iplusone) / abs(f_i);
 }
 
-// Geometric rate of fitness is 1 - (|f_opt - f_i| / |f_opt - f_0|)^(1 / i)
+// Geometric rate of fitness is 1 - (f_opt - f_i / f_opt - f_0)^(1 / i)
 double geom_rate(const double f_opt, const double f_i, const double f_0, const int i) {
-    return 1 - pow(difference_absolute(f_opt, f_i) / difference_absolute(f_opt, f_0), (double) 1 / i);
+    double numerador = f_opt - f_i;
+    double denominador = f_opt - f_0;
+    double frac;
+    if (denominador != 0){
+	frac = numerador/denominador;
+    }
+    else{
+	frac = 0;
+    }
+    return 1 - pow(frac, (double) 1 / i);
+    //return 1 - pow(difference_absolute(f_opt, f_i) / difference_absolute(f_opt, f_0), (double) 1 / i);
 }
 
 // Average of dimension j of n solutions of vector x

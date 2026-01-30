@@ -1,0 +1,15 @@
+typeOfAnalyzer = trajectoryBased
+problem_file=Executions/runsSA/sa/data_f1_OneMax/IOHprofiler_f1_DIM100.dat
+optimum=100
+n_var=100
+maxProblem = true
+problem_name = OneMax
+distance_variant = 0
+hd_variant=0
+qthr=0.9
+path=TrajBasedResults/SA_OneMax100/
+R=50
+entropy_zones=4
+customDomain=true
+domainFile=domains.txt
+#path=../../MHMetLib/JPRuns/10/100/1111/customea/data_f1_OneMax/IOHprofiler_f1_DIM100.dat
