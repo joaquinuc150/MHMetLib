@@ -267,7 +267,7 @@ def mainPopulationBased(input_dir):
         print(f"Warning: Could not find {os.path.join(input_dir, 'ASID_P.txt')}")
 
     try:
-        with open(os.path.join(input_dir, 'diversityDistanceToCenter.txt'), 'r') as file:
+        with open(os.path.join(input_dir, 'SDistance_P.txt'), 'r') as file:
             lines = file.readlines()
         data = [list(map(int, line.strip().split())) for line in lines]
 
@@ -282,10 +282,10 @@ def mainPopulationBased(input_dir):
         plt.ylabel('Distance to Center')
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'diversityDistanceToCenter_boxplot.png'), dpi=300)
+        plt.savefig(os.path.join(output_dir, 'SDistance_P_boxplot.png'), dpi=300)
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'diversityDistanceToCenter.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'SDistance_P.txt')}")
 
 def mainTrayectorial(input_dir):
     output_dir = os.path.join(input_dir, 'figures')

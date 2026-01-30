@@ -297,10 +297,10 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
     timing_file << "entropyDiversity " << metric_duration << std::endl;
 
-    std::cout << "diversityDistanceToCenter" << std::endl;
+    std::cout << "Spatial Distance Entropy" << std::endl; //Old Name: distanceToCenter
     metric_start = std::chrono::high_resolution_clock::now();
     //plot diversity distance to center for each generation based on distanceToCenter parameter
-    std::ofstream file21(route + "diversityDistanceToCenter.txt");
+    std::ofstream file21(route + "SDistance_P.txt");
     std::vector<std::vector<double>> diversityDistanceToCenterVector;
     if (distanceToCenter == 0) {
         diversityDistanceToCenterVector = metricsAnalyzer.diversityDistanceToCenter(R, DiversityCenterType::ZERO_CENTER, std::vector<double>(), domains, maxProblem);
