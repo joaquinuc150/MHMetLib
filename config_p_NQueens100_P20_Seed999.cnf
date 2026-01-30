@@ -1,0 +1,14 @@
+problem_file=Executions/runsGA/20/100/999/customea/data_f23_NQueens/IOHprofiler_f23_DIM100.dat
+typeOfAnalyzer=populationBased
+optimum=0
+n_var=100
+mu=20
+problem_name=NQueens
+distance_to_center=0
+hd_variant=0
+qthr=0.9
+path=Examples/GAMetrics/GA_P20_NQueens100_999
+R=50
+entropy_zones=10
+customDomain=true
+domainFile=domains.txt

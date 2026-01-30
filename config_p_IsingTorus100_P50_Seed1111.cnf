@@ -1,0 +1,14 @@
+problem_file=Executions/runsGA/50/100/1111/customea/data_f20_IsingTorus/IOHprofiler_f20_DIM100.dat
+typeOfAnalyzer=populationBased
+optimum=100
+n_var=100
+mu=50
+problem_name=IsingTorus
+distance_to_center=0
+hd_variant=0
+qthr=0.9
+path=Examples/GAMetrics/GA_IsingTorus100_P50_Seed1111
+R=50
+entropy_zones=10
+customDomain=true
+domainFile=domains.txt
