@@ -717,7 +717,11 @@ int main(int argc, char **argv) {
     std::cout << "Plotting data" << std::endl;
     std::cout << "python3 plotData.py " + route + " " + typeOfAnalyzer << std::endl;
     system(("python3 plotData.py " + route + " " + typeOfAnalyzer).c_str());
+    std::cout << "Preparing TeX Table data" << std::endl;
+    std::cout << "python3.10 MakeTexTable.py --input_dir " + route + " " + " --label " + typeOfAnalyzer + " --output " + typeOfAnalyzer + "Table.tex --format vertical" << std::endl;
+    system(("python3.10 MakeTexTable.py --input_dir " + route + " " + " --label " + typeOfAnalyzer + " --output " + typeOfAnalyzer + "Table.tex --format vertical").c_str());
 
+//python3.10 MakeTexTable.py --input_dir Examples/TrajBasedResults/SA_NQueens100/ --label "SA" --output SA-NQueens.tex --format vertical
     return 0;
 }
 
