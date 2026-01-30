@@ -64,7 +64,7 @@ Use a config file starting with `config_p` to analyze population-based metaheuri
 
 ```
 typeOfAnalyzer=populationBased
-problem_file=JPRuns/10/100/42/customea/data_f1_OneMax/IOHprofiler_f1_DIM100.dat
+problem_file=Executions/runsGA/10/100/42/customea/data_f1_OneMax/IOHprofiler_f1_DIM100.dat
 optimum=100
 n_var=100
 mu=10
@@ -72,7 +72,7 @@ problem_name=OneMax
 distance_to_center=0
 hd_variant=0
 qthr=0.95
-path=JPResults/test_default/
+path=GA/GA_OneMax100var_seed42_PopSize10/
 entropy_zones=4
 R=50
 ```
