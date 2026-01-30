@@ -205,14 +205,24 @@ class RuntimeInfo {
             size_t attempts = fevals.size() - 1;
             size_t improvementAttempts = DistImp_T().size();
             size_t worseningAttempts = DistDet_T().size();
-            size_t noChangeAttempts = getNoChange().size();
+            //size_t noChangeAttempts = getNoChange().size();
 
             std::vector<double> operator_rate_vector;
-            operator_rate_vector.push_back((double) (attempts - noChangeAttempts) / attempts);
+            //operator_rate_vector.push_back((double) (attempts - noChangeAttempts) / attempts);
             operator_rate_vector.push_back((double) improvementAttempts / attempts);
             operator_rate_vector.push_back((double) worseningAttempts / attempts);
 
             return operator_rate_vector;
+        }
+
+        std::vector<double> OperatorApplicationRate_T() {
+            size_t attempts = fevals.size() - 1;
+            size_t noChangeAttempts = getNoChange().size();
+            std::vector<double> operator_app;
+	    double frac = (double) (attempts - noChangeAttempts) / attempts;
+	    cout << "frac -->" << frac << endl;
+            operator_app.push_back(frac);
+            return operator_app;
         }
 
         std::vector<std::vector<double>> ASID_T() {

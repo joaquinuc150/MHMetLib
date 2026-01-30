@@ -59,6 +59,11 @@ void createFileOutput(std::string filePath, std::string outputPath, std::vector<
         std::cout << "OperatorRate_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
+        output_file_vector(filePathOutput, "OperatorApplicationRate_T", data[i].OperatorApplicationRate_T());
+        end = std::chrono::high_resolution_clock::now();
+        std::cout << "OperatorApplicationRate_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+
+        start = std::chrono::high_resolution_clock::now();
         output_file_vector(filePathOutput, "DistMetric", data[i].SDistance_T());
         end = std::chrono::high_resolution_clock::now();
         std::cout << "DistMetric: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;

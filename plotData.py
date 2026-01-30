@@ -24,6 +24,21 @@ def mainPopulationBased(input_dir):
     except FileNotFoundError:
         print(f"Warning: Could not find {os.path.join(input_dir, 'ConvGraph_P.txt')}")
 
+
+    try:
+        data = np.loadtxt(os.path.join(input_dir, 'HamDist_P.txt'))
+        plt.figure(figsize=(10, 6))
+        plt.plot(data[:,0], data[:,1])
+        plt.xlabel('Generation')
+        plt.ylabel('HamDist')
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.savefig(os.path.join(output_dir, 'HamDist_p.png'), dpi=300, bbox_inches='tight')
+        plt.clf()
+    except FileNotFoundError:
+        print(f"Warning: Could not find {os.path.join(input_dir, 'HamDist_P.txt')}")
+
+
     try:
         data = np.loadtxt(os.path.join(input_dir, 'CurrentB_P.txt'))
         plt.figure(figsize=(10, 6))
@@ -169,7 +184,7 @@ def mainPopulationBased(input_dir):
         print(f"Warning: Could not find {os.path.join(input_dir, 'EntropyDiv_P.txt')}")
     
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'rateOfModificationsPerOperator.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'OperatorApplicationRate_P.txt'))
         fig, ax = plt.subplots(figsize=(10, 6))
         if len(data) == 1:
             data = np.append(data, 0.0)
@@ -179,10 +194,10 @@ def mainPopulationBased(input_dir):
         plt.xlabel('Operators')
         plt.ylabel('Rate')
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'rateOfModificationsPerOperator.png'), dpi=300, bbox_inches='tight')
+        plt.savefig(os.path.join(output_dir, 'OperatorApplicationRate_P.png'), dpi=300, bbox_inches='tight')
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'rateOfModificationsPerOperator.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'OperatorApplicationRate_P.txt')}")
 
     try:
         data1 = np.loadtxt(os.path.join(input_dir, 'rateOfImprovementMutations.txt'))
@@ -464,9 +479,9 @@ def mainTrayectorial(input_dir):
 
     try:
         data = np.loadtxt(os.path.join(input_dir, 'OperatorRate_T.txt'))
-        categories = ['Operaror Application Rate', 'Operator Deterioration Rate', 'Operator Improvement Rate']
+        categories = ['Operator Deterioration Rate', 'Operator Improvement Rate']
         fig, ax = plt.subplots(figsize=(8, 6))
-        table_data = [[f"{data[0]:.2f}"], [f"{data[1]:.2f}"], [f"{data[2]:.2f}"]]
+        table_data = [[f"{data[0]:.2f}"], [f"{data[1]:.2f}"]]
         table = ax.table(cellText=table_data,
                             rowLabels=categories,
                             colLabels=['Value'],
@@ -736,8 +751,8 @@ def mainCombined(pop_dir, traj_dir, raw_data_path):
         print(f"Warning: Could not find population hamming distance data")
     
     try:
-        traj_hamming = np.loadtxt(os.path.join(traj_dir, 'DistanceHamming.txt'))
-        plt.plot(np.arange(1, len(traj_hamming) + 1), traj_hamming, 'r--', label='Trajectory Hamming Distance', linewidth=2)
+        traj_hamming = np.loadtxt(os.path.join(traj_dir, 'HamDist_P.txt'))
+        plt.plot(np.arange(1, len(traj_hamming) + 1), traj_hamming, 'r--', label='HamDist', linewidth=2)
     except FileNotFoundError:
         print(f"Warning: Could not find trajectory hamming distance data")
     

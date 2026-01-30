@@ -362,16 +362,16 @@ void createFilesForPlots(ioh::common::MetricsAnalyzer& metricsAnalyzer,int n_fir
     metric_duration = std::chrono::duration<double>(metric_end - metric_start).count();
     timing_file << "rateOfImprovementMutations " << metric_duration << std::endl;
 
-    std::cout << "rateOfModificationsPerOperator" << std::endl;
+    std::cout << "Operator Application Rate" << std::endl;
     metric_start = std::chrono::high_resolution_clock::now();
     //plot rateOfModifications mutations and crossovers
-    std::ofstream file16(route + "rateOfModificationsPerOperator.txt");
+    std::ofstream file16(route + "OperatorApplicationRate_P.txt");
     if (file16.is_open()) {
         file16 << rateOfModificationsMutations << std::endl;
         file16 << rateOfModificationsCrossovers << std::endl;
         file16.close();
     } else {
-        std::cerr << "Failed to open data file: " << "rateOfModificationsPerOperator.txt" << std::endl;
+        std::cerr << "Failed to open data file: " << "OperatorApplicationRate_P.txt" << std::endl;
     }
 
     std::ofstream file8(route + "rateOfImprovementMutationsAndCrossovers.txt");
