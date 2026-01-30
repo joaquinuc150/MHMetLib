@@ -59,14 +59,14 @@ void createFileOutput(std::string filePath, std::string outputPath, std::vector<
         std::cout << "OperatorRate_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "SDistance_T", data[i].SDistance_T());
+        output_file_vector(filePathOutput, "DistMetric", data[i].SDistance_T());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "SDistance_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "DistMetric: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
-        output_file_vector(filePathOutput, "SpheresAreas", data[i].getSpheresAreasForIteration(R, p));
+        output_file_vector(filePathOutput, "SDistance_T", data[i].getSpheresAreasForIteration(R, p));
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "SpheresAreas: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
+        std::cout << "SDistance_T: " << std::chrono::duration<double>(end - start).count() << " s" << std::endl;
 
         start = std::chrono::high_resolution_clock::now();
         output_file_vector(filePathOutput, "ConvRate", data[i].getConvRateAbs());

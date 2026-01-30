@@ -345,17 +345,17 @@ def mainTrayectorial(input_dir):
         print(f"Warning: Could not find {os.path.join(input_dir, 'EntropyWithSphere.txt')}")
 
     try:
-        data = np.loadtxt(os.path.join(input_dir, 'SpheresAreas.txt'))
+        data = np.loadtxt(os.path.join(input_dir, 'SDistance_T.txt'))
         plt.figure(figsize=(12, 8))
-        plt.boxplot(data, labels=['SpheresAreas'])
-        plt.ylabel('Spheres Areas')
+        plt.boxplot(data, labels=['Spatial Distance Entropy'])
+        plt.ylabel('SDE')
         plt.xticks(rotation=45)
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.tight_layout()
-        plt.savefig(os.path.join(output_dir, 'SpheresAreas.png'), dpi=300)
+        plt.savefig(os.path.join(output_dir, 'SDistance_T.png'), dpi=300)
         plt.clf()
     except FileNotFoundError:
-        print(f"Warning: Could not find {os.path.join(input_dir, 'SpheresAreas.txt')}")
+        print(f"Warning: Could not find {os.path.join(input_dir, 'SDistance_T.txt')}")
 
     try:
         data = np.loadtxt(os.path.join(input_dir, 'ConvRate_T.txt'))
