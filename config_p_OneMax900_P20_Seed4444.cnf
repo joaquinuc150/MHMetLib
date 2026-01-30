@@ -1,0 +1,14 @@
+typeOfAnalyzer = populationBased
+problem_file=Executions/runsGA/20/900/4444/customea/data_f1_OneMax/IOHprofiler_f1_DIM900.dat
+optimum=900
+n_var=900
+mu=20
+problem_name=OneMax
+distance_to_center=0
+hd_variant=0
+qthr=0.9
+path=Examples/GAMetrics/GA_P20_OneMax900v_seed4444
+R=50
+entropy_zones=10
+customDomain=true
+domainFile=domains.txt
