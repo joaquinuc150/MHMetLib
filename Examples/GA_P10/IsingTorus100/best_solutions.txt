@@ -1,0 +1,12 @@
+# Best solutions for GA_P10 on IsingTorus100
+# seed	best_solution	output_dir
+1111	162.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed1111
+123	174.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed123
+2222	180.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed2222
+3333	170.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed3333
+42	166.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed42
+4444	170.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed4444
+456	176.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed456
+5555	166.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed5555
+789	160.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed789
+999	178.0	Examples/GAMetrics/GA_P10_IsingTorus100_Seed999

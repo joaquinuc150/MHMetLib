@@ -1,0 +1,15 @@
+Comparison metric: CurrentB_last
+Algorithm A: SA
+Algorithm B: GA_P10
+
+n(A) = 10
+n(B) = 10
+mean(A) = 163.0
+mean(B) = 170.2
+std(A) = 4.737556801183965
+std(B) = 6.76264248155507
+
+Test used: Wilcoxon signed-rank (paired)
+statistic = 4.0
+p-value = 0.02734375
+Different at alpha=0.05? YES

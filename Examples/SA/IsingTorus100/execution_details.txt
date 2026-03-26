@@ -1,0 +1,190 @@
+seed=0
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed0
+  CurrentB_last=162.0
+  EValue=4.94505
+  OperatorApplicationRate=0.997998
+  OperatorRateImprovement=0.361361
+  OperatorRateWorsening=0.354354
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.6598632012012012, AccumulatedIntensify_std=0.02717223129799948
+  DistDet_mean=3.152542372881356, DistDet_std=1.7375723938813283
+  DistImp_mean=3.2797783933518008, DistImp_std=1.8773077518612984
+  EntropyDiv_mean=0.56186496, EntropyDiv_std=0.4928619753877238
+  GeoConvRate_mean=0.19190110944897956, GeoConvRate_std=0.39891758131419275
+  HamDist_mean=0.44947947947947947, HamDist_std=0.0747697154604014
+  SDistance_mean=32.847, SDistance_std=3.3732728869704522
+  VectorDiversity_mean=0.389040684, VectorDiversity_std=0.08112618890322132
+
+seed=1
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed1
+  CurrentB_last=160.0
+  EValue=4.94505
+  OperatorApplicationRate=0.998999
+  OperatorRateImprovement=0.351351
+  OperatorRateWorsening=0.354354
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.660621121121121, AccumulatedIntensify_std=0.02211951787504405
+  DistDet_mean=3.214689265536723, DistDet_std=1.8015445181970715
+  DistImp_mean=3.3732193732193734, DistImp_std=1.9169233251737103
+  EntropyDiv_mean=0.30802276, EntropyDiv_std=0.3763833460635879
+  GeoConvRate_mean=0.043952007036655215, GeoConvRate_std=0.2070578846918575
+  HamDist_mean=0.5101601601601603, HamDist_std=0.08749906598055383
+  SDistance_mean=35.013, SDistance_std=3.997851149531935
+  VectorDiversity_mean=0.3820895245, VectorDiversity_std=0.08844551120419172
+
+seed=2
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed2
+  CurrentB_last=152.0
+  EValue=4.94505
+  OperatorApplicationRate=0.997998
+  OperatorRateImprovement=0.369369
+  OperatorRateWorsening=0.364364
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.653534074074074, AccumulatedIntensify_std=0.02979981733529507
+  DistDet_mean=3.10989010989011, DistDet_std=1.7052862193248592
+  DistImp_mean=3.186991869918699, DistImp_std=1.9699492110091217
+  EntropyDiv_mean=0.39972494999999997, EntropyDiv_std=0.3609793614083152
+  GeoConvRate_mean=0.02681555714545454, GeoConvRate_std=0.1694202717040534
+  HamDist_mean=0.5205005005005006, HamDist_std=0.07625207214734087
+  SDistance_mean=35.417, SDistance_std=3.6199744771496962
+  VectorDiversity_mean=0.40282093150000003, VectorDiversity_std=0.08777804681304617
+
+seed=3
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed3
+  CurrentB_last=166.0
+  EValue=4.94505
+  OperatorApplicationRate=0.998999
+  OperatorRateImprovement=0.366366
+  OperatorRateWorsening=0.362362
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.6622865715715716, AccumulatedIntensify_std=0.028644735491769154
+  DistDet_mean=3.226519337016575, DistDet_std=1.8588900080294999
+  DistImp_mean=3.371584699453552, DistImp_std=1.9213754212138512
+  EntropyDiv_mean=0.52298338, EntropyDiv_std=0.4827529503609455
+  GeoConvRate_mean=0.23126202084939756, GeoConvRate_std=0.4220148015317497
+  HamDist_mean=0.5054354354354355, HamDist_std=0.07685570365271203
+  SDistance_mean=34.865, SDistance_std=3.601353182450278
+  VectorDiversity_mean=0.386980984, VectorDiversity_std=0.08291039638322241
+
+seed=4
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed4
+  CurrentB_last=168.0
+  EValue=4.94505
+  OperatorApplicationRate=1.0
+  OperatorRateImprovement=0.349349
+  OperatorRateWorsening=0.374374
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.6521136766766767, AccumulatedIntensify_std=0.03186170066888448
+  DistDet_mean=3.1550802139037435, DistDet_std=1.7428562329625361
+  DistImp_mean=3.5988538681948423, DistImp_std=2.1333689438123944
+  EntropyDiv_mean=0.50237471, EntropyDiv_std=0.4692625618531439
+  GeoConvRate_mean=0.3334415571633987, GeoConvRate_std=0.4576958538580818
+  HamDist_mean=0.5003903903903903, HamDist_std=0.07385293670713633
+  SDistance_mean=34.699, SDistance_std=3.4978041159609887
+  VectorDiversity_mean=0.397551884, VectorDiversity_std=0.08682353882351801
+
+seed=5
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed5
+  CurrentB_last=166.0
+  EValue=4.94505
+  OperatorApplicationRate=0.998999
+  OperatorRateImprovement=0.34034
+  OperatorRateWorsening=0.36036
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.6516741821821822, AccumulatedIntensify_std=0.02158355546632618
+  DistDet_mean=3.1277777777777778, DistDet_std=2.112518874483249
+  DistImp_mean=3.488235294117647, DistImp_std=2.3417166768464663
+  EntropyDiv_mean=0.47831794, EntropyDiv_std=0.4364106979331989
+  GeoConvRate_mean=0.345722055, GeoConvRate_std=0.48044501206444346
+  HamDist_mean=0.4748848848848849, HamDist_std=0.07024835531605694
+  SDistance_mean=33.781, SDistance_std=3.307866530103804
+  VectorDiversity_mean=0.4056138105, VectorDiversity_std=0.08811999529838889
+
+seed=6
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed6
+  CurrentB_last=162.0
+  EValue=4.94505
+  OperatorApplicationRate=0.998999
+  OperatorRateImprovement=0.348348
+  OperatorRateWorsening=0.348348
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.6646606966966967, AccumulatedIntensify_std=0.019663277464614083
+  DistDet_mean=3.1149425287356323, DistDet_std=1.6970921892180242
+  DistImp_mean=3.2988505747126435, DistImp_std=1.9481163149193632
+  EntropyDiv_mean=0.51601283, EntropyDiv_std=0.5570401171943362
+  GeoConvRate_mean=0.26410217641062805, GeoConvRate_std=0.44157877859900435
+  HamDist_mean=0.4846146146146147, HamDist_std=0.07678814664749854
+  SDistance_mean=34.136, SDistance_std=3.5710301393654262
+  VectorDiversity_mean=0.396234329, VectorDiversity_std=0.08940100763680654
+
+seed=7
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed7
+  CurrentB_last=164.0
+  EValue=4.94505
+  OperatorApplicationRate=0.996997
+  OperatorRateImprovement=0.36036
+  OperatorRateWorsening=0.366366
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.6506852722722724, AccumulatedIntensify_std=0.03394159524402707
+  DistDet_mean=3.07103825136612, DistDet_std=1.6387039695755568
+  DistImp_mean=3.2888888888888888, DistImp_std=1.829772011579825
+  EntropyDiv_mean=0.54565364, EntropyDiv_std=0.3174470722405411
+  GeoConvRate_mean=1.0, GeoConvRate_std=0.0
+  HamDist_mean=0.5084884884884885, HamDist_std=0.07889909855710563
+  SDistance_mean=34.979, SDistance_std=3.633422733561395
+  VectorDiversity_mean=0.39686327749999994, VectorDiversity_std=0.09247269438377263
+
+seed=8
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed8
+  CurrentB_last=162.0
+  EValue=4.94505
+  OperatorApplicationRate=0.997998
+  OperatorRateImprovement=0.368368
+  OperatorRateWorsening=0.378378
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.6344688888888889, AccumulatedIntensify_std=0.025303236159530198
+  DistDet_mean=3.2433862433862433, DistDet_std=1.8220637624405773
+  DistImp_mean=3.494565217391304, DistImp_std=1.9684079310958493
+  EntropyDiv_mean=0.63674856, EntropyDiv_std=0.6167558748549931
+  GeoConvRate_mean=0.5361072209803922, GeoConvRate_std=0.5179028686435009
+  HamDist_mean=0.48008008008008013, HamDist_std=0.06962822540564907
+  SDistance_mean=33.931, SDistance_std=3.4415233666333114
+  VectorDiversity_mean=0.39713225449999995, VectorDiversity_std=0.08333487893233309
+
+seed=9
+mode=T
+output_dir=Examples/TrajBasedResults/SA_IsingTorus100_Seed9
+  CurrentB_last=168.0
+  EValue=4.94505
+  OperatorApplicationRate=0.997998
+  OperatorRateImprovement=0.362362
+  OperatorRateWorsening=0.371371
+  eta_conv=0.20202
+  eta_quality=0.999
+  AccumulatedIntensify_mean=0.6087405625625626, AccumulatedIntensify_std=0.060785066355260875
+  DistDet_mean=3.175202156334232, DistDet_std=1.7081773594843122
+  DistImp_mean=3.3922651933701657, DistImp_std=1.9368838257387588
+  EntropyDiv_mean=0.46439069999999993, EntropyDiv_std=0.3360923849728109
+  GeoConvRate_mean=0.05392012802983294, GeoConvRate_std=0.2233378517314957
+  HamDist_mean=0.46842842842842847, HamDist_std=0.0682535693725744
+  SDistance_mean=33.53, SDistance_std=3.2045856782694027
+  VectorDiversity_mean=0.380429188, VectorDiversity_std=0.08734605995363831
+

@@ -1,0 +1,17 @@
+problem_file=Executions/runsSA/sa-3/data_f20_IsingTorus/IOHprofiler_f20_DIM100.dat
+path=Examples/TrajBasedResults/SA_IsingTorus100_Seed3
+#path=Examples/TrajBasedResults/SA_IsingTorus100/
+#problem_file=Executions/runsSA/sa-9/data_f20_IsingTorus/IOHprofiler_f20_DIM100.dat
+
+typeOfAnalyzer = trajectoryBased
+optimum=100
+n_var=100
+maxProblem = true
+problem_name = IsingTorus
+distance_variant = 0
+hd_variant=0
+qthr=0.9
+R=50
+entropy_zones=10
+customDomain=true
+domainFile=domains.txt
