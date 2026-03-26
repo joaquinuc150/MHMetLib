@@ -9,6 +9,7 @@ To build and run this program, you need:
 - A C++ compiler with C++17 support (e.g., GCC, Clang)
 - Python 3.x (for `plotData.py` and data visualization)
 - Eigen 3.x (header-only linear algebra library)
+- SciPy (for Wilcoxon test)
 
 ## Installation
 
@@ -152,6 +153,25 @@ python3 plotData.py combined --pop_dir Examples/GAMetrics/GA_P10_OneMax100v_seed
 --traj_dir Examples/TrajBasedResults/SA_OneMax100
 --raw_data Executions/runsGA/10/100/1111/customea/data_f1_OneMax/IOHprofiler_f1_DIM100.dat
 ```
+
+
+**Example Run - Multiple Executions**:
+
+The library can be executed by considering multiple independent executions of a target algorithm.
+For this, runMHMetLib.py has a minimal user configuration at the top of the file.
+Here, a base configuration file, the path to the IOHProfiler executions (ideally including the used seeds or the logic to generate all paths), the problem name, the library output path, and the final summary path should be provided.
+The runMHMetLib.py script, for each provided independent execution, will create a new configuration file (adding the lines to declare the path and problemFile), will execute MHMetLib, 
+and, at the end, will produce a summary table containing statistics for all the metrics (average and standard deviation).
+
+If the objective is to compare two algorithms (flag COMPARE_TWO_ALGORITHMS set to true), all the information for the two target algorithms must be provided.
+At the end, the library will produce a comparison table in LaTeX format and perform a Wilcoxon paired test to verify statistical differences between the sets of best solutions found by each algorithm (output in COMPARISON_BASE_DIR).
+
+To execute, define all the required paths and variables at the beginning of the runMHMetLib.py script.
+
+```sh
+python3.X runMHMetLib.py
+```
+
 
 ## License
 
